@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Mascot from '@/components/Mascot';
+import Mascot from '@/components/WorldMascot';
 import { useStore, Age } from '@/store/useStore';
 import { sfx, haptic } from '@/lib/sound';
 import { useT } from '@/i18n';

@@ -9,18 +9,81 @@
   }
   body {
     @apply font-sans text-slate-800 antialiased dark:text-slate-100;
-    background: radial-gradient(circle at top, #ede9fe 0%, #fdf4ff 50%, #fff 100%);
     font-size: 18px;
     overscroll-behavior: none;
-  }
-  html.dark body {
-    background: radial-gradient(circle at top, #1e1b4b 0%, #0f172a 60%, #020617 100%);
   }
   button { touch-action: manipulation; }
   h1, h2, h3 { @apply font-display; }
   input, textarea {
     @apply dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100;
   }
+  *:focus-visible {
+    outline: 3px solid #8b5cf6;
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+
+  /* Accessibility — font scaling */
+  html.a11y-large { font-size: 112.5%; }
+  html.a11y-xlarge { font-size: 125%; }
+
+  /* Accessibility — dyslexia-friendly */
+  html.a11y-dyslexia body {
+    font-family: 'Comic Sans MS', 'Varela Round', sans-serif;
+    letter-spacing: 0.04em;
+    word-spacing: 0.12em;
+    line-height: 1.7;
+  }
+
+  /* Accessibility — underline links */
+  html.a11y-underline a { text-decoration: underline !important; }
+
+  /* Accessibility — high contrast */
+  html.a11y-contrast body {
+    background: #000 !important;
+    color: #fff !important;
+  }
+  html.a11y-contrast .card,
+  html.a11y-contrast button {
+    background: #000 !important;
+    color: #fff !important;
+    border: 2px solid #fff !important;
+  }
+  html.a11y-contrast .btn-primary {
+    background: #ffeb00 !important;
+    color: #000 !important;
+  }
+
+  /* Accessibility — reduced motion */
+  html.a11y-reduce-motion *,
+  html.a11y-reduce-motion *::before,
+  html.a11y-reduce-motion *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  /* Skip link */
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #6d28d9;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: bold;
+    z-index: 9999;
+    transition: top 0.2s;
+  }
+  .skip-link:focus { top: 12px; }
 }
 
 @layer components {

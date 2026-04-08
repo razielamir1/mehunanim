@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Lightbulb, Sparkles, Flame, BookOpen } from 'lucide-react';
+import { ArrowRight, Lightbulb, Sparkles, Flame, BookOpen, ArrowLeftRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import Mascot from '@/components/Mascot';
+import Mascot from '@/components/WorldMascot';
 import { GAMES } from '@/games';
 import { generate, MCQ } from '@/games/generators';
 import { useStore, getCurrentLevel } from '@/store/useStore';
@@ -128,7 +128,29 @@ export default function Play() {
           initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 40, opacity: 0 }}
           className="card text-center"
         >
-          <div className="text-2xl sm:text-3xl font-black my-4 leading-relaxed whitespace-pre-line break-words">{q.prompt}</div>
+          <div
+            className="inline-flex items-center gap-2 bg-brand-50 dark:bg-brand-700/30 text-brand-700 dark:text-brand-100 px-4 py-1.5 rounded-full text-sm font-bold mb-2"
+            aria-label={q.dir === 'rtl' ? 'כיוון קריאה: מימין לשמאל' : 'כיוון קריאה: משמאל לימין'}
+          >
+            {q.dir === 'rtl' ? (
+              <>
+                <ArrowLeftRight className="w-4 h-4" />
+                קרא מימין לשמאל ←
+              </>
+            ) : (
+              <>
+                <ArrowLeftRight className="w-4 h-4" />
+                → קרא משמאל לימין
+              </>
+            )}
+          </div>
+          <div
+            dir={q.dir}
+            className="text-2xl sm:text-3xl font-black my-4 leading-relaxed whitespace-pre-line break-words"
+            style={{ unicodeBidi: 'plaintext' }}
+          >
+            {q.prompt}
+          </div>
           <div className="grid grid-cols-2 gap-3">
             {q.options.map((opt, i) => {
               const isRight = picked !== null && i === q.correct;

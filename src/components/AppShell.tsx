@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, BarChart3, MessageCircle, Settings as Cog } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useT } from '@/i18n';
+import WorldBackground from './WorldBackground';
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
@@ -10,7 +11,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const showNav = pathname !== '/';
   return (
     <div className="min-h-full flex flex-col">
-      <main className="flex-1 max-w-3xl w-full mx-auto px-4 pt-6 pb-28">{children}</main>
+      <a href="#main-content" className="skip-link">דלג לתוכן הראשי</a>
+      <WorldBackground />
+      <main id="main-content" className="flex-1 max-w-3xl w-full mx-auto px-4 pt-6 pb-28">{children}</main>
       {showNav && (
         <nav className="fixed bottom-0 inset-x-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-t border-slate-200 dark:border-slate-800">
           <div className="max-w-3xl mx-auto grid grid-cols-4 gap-1 p-2">

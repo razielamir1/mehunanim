@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star, Award } from 'lucide-react';
-import Mascot from '@/components/Mascot';
+import Mascot from '@/components/WorldMascot';
 import { useStore, getCurrentLevel } from '@/store/useStore';
 import { GAMES } from '@/games';
 import { useT } from '@/i18n';

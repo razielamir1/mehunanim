@@ -3,7 +3,7 @@ import { useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star, TrendingUp } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import Mascot from '@/components/Mascot';
+import Mascot from '@/components/WorldMascot';
 
 export default function Results() {
   const { state } = useLocation() as {

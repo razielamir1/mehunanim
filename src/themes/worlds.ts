@@ -1,0 +1,173 @@
+// World themes — each defines a mascot character, palette, background pattern, and animated particles.
+export type WorldId = 'owl' | 'space' | 'ocean' | 'forest' | 'planes' | 'jungle' | 'desert' | 'unicorn' | 'princess' | 'lego';
+
+export type World = {
+  id: WorldId;
+  name: string;
+  nameEn: string;
+  emoji: string;
+  mascot: string;       // emoji used as mascot character
+  mascotName: string;
+  mascotNameEn: string;
+  bgGradient: string;   // tailwind classes
+  bgGradientDark: string;
+  primary: string;      // tailwind from-class
+  accent: string;       // tailwind to-class
+  particles: string[];  // emojis floating in background
+  description: string;
+};
+
+export const WORLDS: World[] = [
+  {
+    id: 'owl',
+    name: 'בוקי הינשוף',
+    nameEn: 'Buki the Owl',
+    emoji: '🦉',
+    mascot: '🦉',
+    mascotName: 'בוקי',
+    mascotNameEn: 'Buki',
+    bgGradient: 'from-violet-100 via-fuchsia-50 to-pink-50',
+    bgGradientDark: 'from-indigo-950 via-violet-950 to-slate-950',
+    primary: 'from-indigo-500',
+    accent: 'to-pink-500',
+    particles: ['✨', '⭐', '🌟', '💜'],
+    description: 'הקלאסי — חכם ומעודד',
+  },
+  {
+    id: 'space',
+    name: 'חלל',
+    nameEn: 'Space',
+    emoji: '🚀',
+    mascot: '👨‍🚀',
+    mascotName: 'אסטרו',
+    mascotNameEn: 'Astro',
+    bgGradient: 'from-indigo-200 via-purple-100 to-slate-100',
+    bgGradientDark: 'from-slate-950 via-indigo-950 to-black',
+    primary: 'from-blue-500',
+    accent: 'to-purple-600',
+    particles: ['⭐', '🌟', '✨', '🪐', '🛸', '☄️', '🌙'],
+    description: 'הרפתקה בין כוכבים',
+  },
+  {
+    id: 'ocean',
+    name: 'ים',
+    nameEn: 'Ocean',
+    emoji: '🌊',
+    mascot: '🐬',
+    mascotName: 'דולפי',
+    mascotNameEn: 'Dolphi',
+    bgGradient: 'from-cyan-100 via-sky-50 to-blue-100',
+    bgGradientDark: 'from-slate-950 via-sky-950 to-blue-950',
+    primary: 'from-cyan-500',
+    accent: 'to-blue-600',
+    particles: ['🐠', '🐟', '🐡', '🐚', '🪸', '💧', '🫧'],
+    description: 'צלילה למעמקים',
+  },
+  {
+    id: 'forest',
+    name: 'יער',
+    nameEn: 'Forest',
+    emoji: '🌳',
+    mascot: '🦊',
+    mascotName: 'פוקסי',
+    mascotNameEn: 'Foxy',
+    bgGradient: 'from-emerald-100 via-lime-50 to-green-100',
+    bgGradientDark: 'from-slate-950 via-emerald-950 to-green-950',
+    primary: 'from-emerald-500',
+    accent: 'to-lime-600',
+    particles: ['🍃', '🌿', '🍂', '🌲', '🦋', '🌸', '🐿️'],
+    description: 'הרפתקה ביער הקסום',
+  },
+  {
+    id: 'planes',
+    name: 'מטוסים',
+    nameEn: 'Planes',
+    emoji: '✈️',
+    mascot: '👨‍✈️',
+    mascotName: 'קפטן רן',
+    mascotNameEn: 'Captain Ron',
+    bgGradient: 'from-sky-100 via-blue-50 to-indigo-50',
+    bgGradientDark: 'from-slate-950 via-sky-950 to-indigo-950',
+    primary: 'from-sky-500',
+    accent: 'to-indigo-500',
+    particles: ['☁️', '✈️', '🛩️', '🌤️', '🦅'],
+    description: 'טסים גבוה בשמיים',
+  },
+  {
+    id: 'jungle',
+    name: 'ג׳ונגל',
+    nameEn: 'Jungle',
+    emoji: '🦁',
+    mascot: '🦁',
+    mascotName: 'ליאו',
+    mascotNameEn: 'Leo',
+    bgGradient: 'from-amber-100 via-yellow-50 to-orange-100',
+    bgGradientDark: 'from-slate-950 via-amber-950 to-orange-950',
+    primary: 'from-amber-500',
+    accent: 'to-orange-600',
+    particles: ['🐒', '🦓', '🐘', '🌴', '🍌', '🦒'],
+    description: 'מלך הג׳ונגל מחכה',
+  },
+  {
+    id: 'unicorn',
+    name: 'חדי קרן',
+    nameEn: 'Unicorns',
+    emoji: '🦄',
+    mascot: '🦄',
+    mascotName: 'לונה',
+    mascotNameEn: 'Luna',
+    bgGradient: 'from-pink-100 via-fuchsia-50 to-purple-100',
+    bgGradientDark: 'from-fuchsia-950 via-pink-950 to-purple-950',
+    primary: 'from-pink-400',
+    accent: 'to-fuchsia-500',
+    particles: ['🦄', '🌈', '✨', '💖', '🌸', '⭐', '💫'],
+    description: 'עולם קסום וורוד',
+  },
+  {
+    id: 'princess',
+    name: 'נסיכות',
+    nameEn: 'Princess',
+    emoji: '👸',
+    mascot: '👸',
+    mascotName: 'הנסיכה רוז',
+    mascotNameEn: 'Princess Rose',
+    bgGradient: 'from-rose-100 via-pink-50 to-amber-50',
+    bgGradientDark: 'from-rose-950 via-purple-950 to-pink-950',
+    primary: 'from-rose-400',
+    accent: 'to-pink-500',
+    particles: ['👑', '💎', '🌹', '✨', '🎀', '💖', '🏰'],
+    description: 'הטירה הקסומה',
+  },
+  {
+    id: 'lego',
+    name: 'לגו',
+    nameEn: 'Lego',
+    emoji: '🧱',
+    mascot: '🧑‍🚒',
+    mascotName: 'בנאי לגו',
+    mascotNameEn: 'Lego Builder',
+    bgGradient: 'from-yellow-100 via-red-50 to-blue-100',
+    bgGradientDark: 'from-slate-950 via-blue-950 to-red-950',
+    primary: 'from-yellow-400',
+    accent: 'to-red-500',
+    particles: ['🧱', '🟥', '🟦', '🟨', '🟩', '🔧', '🚗'],
+    description: 'בונים עולם משלך',
+  },
+  {
+    id: 'desert',
+    name: 'מדבר',
+    nameEn: 'Desert',
+    emoji: '🐪',
+    mascot: '🐪',
+    mascotName: 'גמלי',
+    mascotNameEn: 'Cami',
+    bgGradient: 'from-orange-100 via-amber-50 to-yellow-100',
+    bgGradientDark: 'from-slate-950 via-orange-950 to-amber-950',
+    primary: 'from-orange-500',
+    accent: 'to-rose-500',
+    particles: ['🌵', '☀️', '🦂', '🪨', '🌅'],
+    description: 'מסע במדבר הזהב',
+  },
+];
+
+export const getWorld = (id: string): World => WORLDS.find((w) => w.id === id) ?? WORLDS[0];

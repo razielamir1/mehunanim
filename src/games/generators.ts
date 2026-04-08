@@ -1,6 +1,7 @@
 // Level-based question generators (level 1-10+).
 // Higher level = harder. Level loosely maps to age - 1 at start.
-export type MCQ = { prompt: string; options: string[]; correct: number; hintContext: string };
+export type ReadDir = 'rtl' | 'ltr';
+export type MCQ = { prompt: string; options: string[]; correct: number; hintContext: string; dir: ReadDir };
 
 const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
 const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
@@ -17,7 +18,7 @@ export function genPattern(level: number): MCQ {
   const answer = pool[0];
   const distractors = shuffle(SHAPES.filter((s) => !pool.includes(s))).slice(0, Math.min(3, level + 1));
   const options = shuffle([answer, ...distractors]);
-  return { prompt: seq.join(' '), options, correct: options.indexOf(answer), hintContext: `הרצף חוזר על עצמו: ${pool.join('-')}` };
+  return { prompt: seq.join(' '), options, correct: options.indexOf(answer), hintContext: `הרצף חוזר על עצמו: ${pool.join('-')}`, dir: 'rtl' };
 }
 
 // ---------------- Odd one out ----------------
@@ -35,7 +36,7 @@ const GROUPS = [
 export function genOdd(_level: number): MCQ {
   const g = pick(GROUPS);
   const options = shuffle([...g.items.slice(0, 3), g.odd]);
-  return { prompt: 'איזו מילה לא שייכת לקבוצה?', options, correct: options.indexOf(g.odd), hintContext: `שלוש מהמילים הן ${g.cat}` };
+  return { prompt: 'איזו מילה לא שייכת לקבוצה?', options, correct: options.indexOf(g.odd), hintContext: `שלוש מהמילים הן ${g.cat}`, dir: 'rtl' };
 }
 
 // ---------------- Number sequence ----------------
@@ -46,7 +47,7 @@ export function genSequence(level: number): MCQ {
   const seq = [start, start + step, start + 2 * step, start + 3 * step];
   const answer = start + 4 * step;
   const opts = shuffle([answer, answer + 1, answer - step, answer + step * 2]).map(String);
-  return { prompt: `${seq.join(' , ')} , ?`, options: opts, correct: opts.indexOf(String(answer)), hintContext: `בכל פעם מוסיפים ${step}` };
+  return { prompt: `${seq.join(' , ')} , ?`, options: opts, correct: opts.indexOf(String(answer)), hintContext: `בכל פעם מוסיפים ${step}`, dir: 'ltr' };
 }
 
 // ---------------- Analogies ----------------
@@ -62,7 +63,7 @@ const ANALOGIES = [
 export function genAnalogy(_level: number): MCQ {
   const q = pick(ANALOGIES);
   const options = shuffle([q.d, ...q.distractors]);
-  return { prompt: `${q.a} : ${q.b} :: ${q.c} : ?`, options, correct: options.indexOf(q.d), hintContext: `מה היחס בין ${q.a} ל-${q.b}?` };
+  return { prompt: `${q.a} : ${q.b} :: ${q.c} : ?`, options, correct: options.indexOf(q.d), hintContext: `מה היחס בין ${q.a} ל-${q.b}?`, dir: 'rtl' };
 }
 
 // ---------------- Memory ----------------
@@ -73,7 +74,7 @@ export function genMemory(level: number): MCQ {
   const idx = rand(0, len - 1);
   const answer = seq[idx];
   const options = shuffle([answer, ...shuffle(SHAPES.filter((s) => s !== answer)).slice(0, 3)]);
-  return { prompt: `זכור: ${seq.join(' ')}  •  מה היה במקום ה-${idx + 1}?`, options, correct: options.indexOf(answer), hintContext: `ספור מימין לשמאל` };
+  return { prompt: `זכור: ${seq.join(' ')}  •  מה היה במקום ה-${idx + 1}?`, options, correct: options.indexOf(answer), hintContext: `ספור מימין לשמאל`, dir: 'rtl' };
 }
 
 // ---------------- Math sprint (arithmetic + word problems) ----------------
@@ -94,7 +95,7 @@ export function genMath(level: number): MCQ {
   ans = op === '+' ? a + b : op === '-' ? a - b : a * b;
 
   const opts = shuffle([ans, ans + 1, ans - 1, ans + (op === '×' ? 2 : rand(2, 5))]).map(String);
-  return { prompt: `${a} ${op} ${b} = ?`, options: opts, correct: opts.indexOf(String(ans)), hintContext: `חשב צעד אחר צעד` };
+  return { prompt: `${a} ${op} ${b} = ?`, options: opts, correct: opts.indexOf(String(ans)), hintContext: `חשב צעד אחר צעד`, dir: 'ltr' };
 }
 
 function genWordProblem(level: number): MCQ {
@@ -110,6 +111,7 @@ function genWordProblem(level: number): MCQ {
         prompt: `יש לי ${wallet} ₪. אני קונה ${qty} משחקים בעלות של ${itemPrice} ₪ כל אחד. כמה כסף יישאר לי?`,
         options: opts, correct: opts.indexOf(String(ans)),
         hintContext: `קודם חשב כמה עולים ${qty} משחקים, ואז חסר מהסכום שיש לי`,
+        dir: 'rtl',
       };
     },
     // sharing
@@ -122,6 +124,7 @@ function genWordProblem(level: number): MCQ {
         prompt: `ל-${kids} ילדים יש לחלק ${total} סוכריות בשווה. כמה סוכריות יקבל כל ילד?`,
         options: opts, correct: opts.indexOf(String(each)),
         hintContext: `חלק את הסוכריות שווה בשווה`,
+        dir: 'rtl',
       };
     },
     // change over time
@@ -135,6 +138,7 @@ function genWordProblem(level: number): MCQ {
         prompt: `בכיתה היו ${start} ילדים. הגיעו עוד ${added} ילדים, ואז ${removed} ילדים הלכו הביתה. כמה ילדים נשארו?`,
         options: opts, correct: opts.indexOf(String(ans)),
         hintContext: `קודם הוסף, ואחר כך חסר`,
+        dir: 'rtl',
       };
     },
     // simple counting (low level)
@@ -146,6 +150,7 @@ function genWordProblem(level: number): MCQ {
         prompt: `יש לי ${a} תפוחים וקיבלתי עוד ${b}. כמה תפוחים יש לי עכשיו?`,
         options: opts, correct: opts.indexOf(String(ans)),
         hintContext: `ספור את כל התפוחים`,
+        dir: 'rtl',
       };
     },
   ];
@@ -173,7 +178,7 @@ const PASSAGES = [
 export function genReading(_level: number): MCQ {
   const p = pick(PASSAGES);
   const options = [...p.options];
-  return { prompt: `${p.text}\n\n${p.q}`, options, correct: p.correct, hintContext: p.hint };
+  return { prompt: `${p.text}\n\n${p.q}`, options, correct: p.correct, hintContext: p.hint, dir: 'rtl' };
 }
 
 export function generate(gameId: string, level: number): MCQ {

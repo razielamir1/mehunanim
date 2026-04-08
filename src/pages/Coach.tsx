@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Send, Trash2, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Mascot from '@/components/Mascot';
+import Mascot from '@/components/WorldMascot';
 import { useStore, ChatMsg } from '@/store/useStore';
 import { askGemini } from '@/lib/gemini';
 import { useT } from '@/i18n';
