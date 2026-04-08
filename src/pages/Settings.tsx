@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useStore } from '@/store/useStore';
-import { Volume2, VolumeX, Sun, Moon, Mic, Languages, UserCog, Sparkles, Accessibility as A11yIcon, Users } from 'lucide-react';
+import { Volume2, VolumeX, Sun, Moon, Mic, Languages, UserCog, Sparkles, Accessibility as A11yIcon, Users, MessageSquare } from 'lucide-react';
 import { useT } from '@/i18n';
 import { Link } from 'react-router-dom';
+import FeedbackModal from '@/components/FeedbackModal';
 
 export default function Settings() {
   const t = useT();
@@ -17,6 +19,7 @@ export default function Settings() {
   const toggleTts = useStore((s) => s.toggleTts);
   const setTheme = useStore((s) => s.setTheme);
   const setLocale = useStore((s) => s.setLocale);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -28,19 +31,19 @@ export default function Settings() {
           <div className="text-4xl">{avatar}</div>
           <div>
             <div className="font-bold">{name || '—'}</div>
-            <div className="text-sm text-slate-500">גיל {age} {city && `• ${city}`}</div>
+            <div className="text-sm text-slate-500">{t('ageLabel')} {age} {city && `• ${city}`}</div>
           </div>
         </div>
       </div>
 
       <button onClick={toggleSound} className="btn-ghost w-full justify-between">
-        <span className="flex items-center gap-2">{soundOn ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />} צלילים</span>
-        <span className="text-sm">{soundOn ? 'פועלים' : 'כבויים'}</span>
+        <span className="flex items-center gap-2">{soundOn ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />} {t('soundOnLabel')}</span>
+        <span className="text-sm">{soundOn ? t('soundOnState') : t('soundOffState')}</span>
       </button>
 
       <button onClick={toggleTts} className="btn-ghost w-full justify-between">
-        <span className="flex items-center gap-2"><Mic className="w-5 h-5" /> {t('tts')}</span>
-        <span className="text-sm">{ttsOn ? 'פועלת' : 'כבויה'}</span>
+        <span className="flex items-center gap-2"><Mic className="w-5 h-5" /> {t('ttsLabel')}</span>
+        <span className="text-sm">{ttsOn ? t('ttsOnState') : t('ttsOffState')}</span>
       </button>
 
       <button
@@ -60,24 +63,31 @@ export default function Settings() {
       </button>
 
       <Link to="/profiles" className="btn-ghost w-full justify-between">
-        <span className="flex items-center gap-2"><Users className="w-5 h-5" /> הילדים שלי</span>
+        <span className="flex items-center gap-2"><Users className="w-5 h-5" /> {t('myKids')}</span>
         <span>›</span>
       </Link>
 
       <Link to="/worlds" className="btn-ghost w-full justify-between">
-        <span className="flex items-center gap-2"><Sparkles className="w-5 h-5" /> בחר עולם</span>
+        <span className="flex items-center gap-2"><Sparkles className="w-5 h-5" /> {t('pickWorld')}</span>
         <span>›</span>
       </Link>
 
       <Link to="/accessibility" className="btn-ghost w-full justify-between">
-        <span className="flex items-center gap-2"><A11yIcon className="w-5 h-5" /> נגישות</span>
+        <span className="flex items-center gap-2"><A11yIcon className="w-5 h-5" /> {t('accessibility')}</span>
         <span>›</span>
       </Link>
+
+      <button onClick={() => setShowFeedback(true)} className="btn-ghost w-full justify-between">
+        <span className="flex items-center gap-2"><MessageSquare className="w-5 h-5" /> {locale === 'en' ? 'Feedback' : 'משוב'}</span>
+        <span>›</span>
+      </button>
 
       <Link to="/parent" className="btn-ghost w-full justify-between">
         <span className="flex items-center gap-2"><UserCog className="w-5 h-5" /> {t('parent')}</span>
         <span>›</span>
       </Link>
+
+      {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
     </div>
   );
 }

@@ -15,6 +15,7 @@ export type World = {
   accent: string;       // tailwind to-class
   particles: string[];  // emojis floating in background
   description: string;
+  descriptionEn: string;
 };
 
 export const WORLDS: World[] = [
@@ -32,6 +33,7 @@ export const WORLDS: World[] = [
     accent: 'to-pink-500',
     particles: ['✨', '⭐', '🌟', '💜'],
     description: 'הקלאסי — חכם ומעודד',
+    descriptionEn: 'The classic — wise and encouraging',
   },
   {
     id: 'space',
@@ -47,6 +49,7 @@ export const WORLDS: World[] = [
     accent: 'to-purple-600',
     particles: ['⭐', '🌟', '✨', '🪐', '🛸', '☄️', '🌙'],
     description: 'הרפתקה בין כוכבים',
+    descriptionEn: 'Adventure among the stars',
   },
   {
     id: 'ocean',
@@ -62,6 +65,7 @@ export const WORLDS: World[] = [
     accent: 'to-blue-600',
     particles: ['🐠', '🐟', '🐡', '🐚', '🪸', '💧', '🫧'],
     description: 'צלילה למעמקים',
+    descriptionEn: 'Dive into the deep',
   },
   {
     id: 'forest',
@@ -77,6 +81,7 @@ export const WORLDS: World[] = [
     accent: 'to-lime-600',
     particles: ['🍃', '🌿', '🍂', '🌲', '🦋', '🌸', '🐿️'],
     description: 'הרפתקה ביער הקסום',
+    descriptionEn: 'Adventure in the magical forest',
   },
   {
     id: 'planes',
@@ -92,6 +97,7 @@ export const WORLDS: World[] = [
     accent: 'to-indigo-500',
     particles: ['☁️', '✈️', '🛩️', '🌤️', '🦅'],
     description: 'טסים גבוה בשמיים',
+    descriptionEn: 'Flying high in the sky',
   },
   {
     id: 'jungle',
@@ -107,6 +113,7 @@ export const WORLDS: World[] = [
     accent: 'to-orange-600',
     particles: ['🐒', '🦓', '🐘', '🌴', '🍌', '🦒'],
     description: 'מלך הג׳ונגל מחכה',
+    descriptionEn: 'The jungle king awaits',
   },
   {
     id: 'unicorn',
@@ -122,6 +129,7 @@ export const WORLDS: World[] = [
     accent: 'to-fuchsia-500',
     particles: ['🦄', '🌈', '✨', '💖', '🌸', '⭐', '💫'],
     description: 'עולם קסום וורוד',
+    descriptionEn: 'A magical pink world',
   },
   {
     id: 'princess',
@@ -137,6 +145,7 @@ export const WORLDS: World[] = [
     accent: 'to-pink-500',
     particles: ['👑', '💎', '🌹', '✨', '🎀', '💖', '🏰'],
     description: 'הטירה הקסומה',
+    descriptionEn: 'The enchanted castle',
   },
   {
     id: 'lego',
@@ -152,6 +161,7 @@ export const WORLDS: World[] = [
     accent: 'to-red-500',
     particles: ['🧱', '🟥', '🟦', '🟨', '🟩', '🔧', '🚗'],
     description: 'בונים עולם משלך',
+    descriptionEn: 'Build your own world',
   },
   {
     id: 'desert',
@@ -167,6 +177,7 @@ export const WORLDS: World[] = [
     accent: 'to-rose-500',
     particles: ['🌵', '☀️', '🦂', '🪨', '🌅'],
     description: 'מסע במדבר הזהב',
+    descriptionEn: 'Journey through the golden desert',
   },
 ];
 

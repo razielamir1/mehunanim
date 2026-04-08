@@ -52,6 +52,7 @@ export type Profile = {
   collectibles: string[];
   streak: number;
   chatHistory: ChatMsg[];
+  tutorialSeen?: boolean;
 };
 
 const newId = () => Math.random().toString(36).slice(2, 10);
@@ -70,6 +71,7 @@ const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   collectibles: [],
   streak: 0,
   chatHistory: [],
+  tutorialSeen: false,
   ...overrides,
 });
 

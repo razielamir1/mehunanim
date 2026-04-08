@@ -1,26 +1,48 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star, Award, GraduationCap } from 'lucide-react';
 import Mascot from '@/components/WorldMascot';
+import Tutorial from '@/components/Tutorial';
 import { useStore, getCurrentLevel } from '@/store/useStore';
-import { gamesForAge } from '@/games';
+import { gamesForAge, localizeGame } from '@/games';
 import { useT } from '@/i18n';
 
 export default function Dashboard() {
   const t = useT();
+  const locale = useStore((s) => s.locale);
   const name = useStore((s) => s.name);
   const avatar = useStore((s) => s.avatar);
   const stars = useStore((s) => s.stars);
   const levels = useStore((s) => s.levels);
   const age = useStore((s) => s.age);
+  const profiles = useStore((s) => s.profiles);
+  const activeId = useStore((s) => s.activeProfileId);
+  const updateActive = useStore((s) => s.updateActive);
   const games = gamesForAge(age);
   const totalLvls = Object.values(levels);
   const avgLevel = totalLvls.length ? (totalLvls.reduce((a, b) => a + b, 0) / totalLvls.length).toFixed(1) : '1';
 
+  // Show tutorial on first visit per profile
+  const activeProfile = profiles.find((p) => p.id === activeId);
+  const [showTutorial, setShowTutorial] = useState(false);
+  useEffect(() => {
+    if (activeProfile && !activeProfile.tutorialSeen) {
+      setShowTutorial(true);
+    }
+  }, [activeId]); // re-evaluate when switching profiles
+
+  const closeTutorial = () => {
+    setShowTutorial(false);
+    updateActive({ tutorialSeen: true });
+  };
+
   return (
     <div className="space-y-6">
+      {showTutorial && <Tutorial onClose={closeTutorial} />}
+
       <div className="flex items-center justify-between">
-        <Link to="/profiles" className="flex items-center gap-3 active:scale-95 transition" aria-label="החלף פרופיל">
+        <Link to="/profiles" className="flex items-center gap-3 active:scale-95 transition" aria-label={t('switchProfile')}>
           <div className="text-4xl">{avatar}</div>
           <div>
             <div className="text-sm text-slate-500 dark:text-slate-400">{t('hello')},</div>
@@ -55,8 +77,8 @@ export default function Dashboard() {
           <div className="flex items-center gap-3">
             <GraduationCap className="w-12 h-12" />
             <div className="flex-1">
-              <div className="font-black text-xl">מבחן סימולציה</div>
-              <div className="text-sm opacity-90">10 שאלות כמו במבחן האמיתי 🎓</div>
+              <div className="font-black text-xl">{t('mockExamCta')}</div>
+              <div className="text-sm opacity-90">{t('mockExamSub')}</div>
             </div>
             <span className="text-2xl">›</span>
           </div>
@@ -64,7 +86,8 @@ export default function Dashboard() {
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {games.map((g, i) => {
+        {games.map((rawG, i) => {
+          const g = localizeGame(rawG, locale);
           const lvl = getCurrentLevel(g.id);
           return (
             <motion.div key={g.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>

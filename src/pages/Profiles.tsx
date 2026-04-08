@@ -4,10 +4,12 @@ import { motion } from 'framer-motion';
 import { Plus, Trash2, Check, Star, ArrowRight } from 'lucide-react';
 import { useStore, Age } from '@/store/useStore';
 import { sfx, haptic } from '@/lib/sound';
+import { useT } from '@/i18n';
 
 const AVATARS = ['🦊', '🐼', '🐨', '🦁', '🐯', '🐵', '🦄', '🐸', '🐰', '🐻', '🐱', '🐶'];
 
 export default function Profiles() {
+  const t = useT();
   const nav = useNavigate();
   const profiles = useStore((s) => s.profiles);
   const activeId = useStore((s) => s.activeProfileId);
@@ -38,9 +40,9 @@ export default function Profiles() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-black">הילדים שלי 👨‍👩‍👧‍👦</h1>
-        <Link to="/dashboard" className="btn-ghost !min-h-[48px] !px-4 !py-2 text-sm" aria-label="חזרה">
-          <ArrowRight className="w-4 h-4" /> חזרה
+        <h1 className="text-3xl font-black">{t('myKidsTitle')}</h1>
+        <Link to="/dashboard" className="btn-ghost !min-h-[48px] !px-4 !py-2 text-sm" aria-label={t('back')}>
+          <ArrowRight className="w-4 h-4" /> {t('back')}
         </Link>
       </div>
 
@@ -61,12 +63,12 @@ export default function Profiles() {
             <button
               onClick={() => choose(p.id)}
               className="w-full text-start min-h-[120px]"
-              aria-label={`בחר את הפרופיל של ${p.name || 'ילד'}`}
+              aria-label={t('selectProfileAria', { name: p.name || t('noName') })}
             >
               <div className="text-6xl mb-2">{p.avatar}</div>
-              <div className="font-black text-xl">{p.name || 'ללא שם'}</div>
+              <div className="font-black text-xl">{p.name || t('noName')}</div>
               <div className="text-sm text-slate-500 dark:text-slate-400">
-                גיל {p.age}
+                {t('ageLabel')} {p.age}
                 {p.city && ` • ${p.city}`}
               </div>
               <div className="flex items-center gap-1 mt-2 text-amber-500">
@@ -77,7 +79,7 @@ export default function Profiles() {
             {profiles.length > 1 && (
               <button
                 onClick={() => setConfirmDelete(p.id)}
-                aria-label={`מחק פרופיל ${p.name}`}
+                aria-label={t('deleteProfileAria', { name: p.name })}
                 className="absolute bottom-3 end-3 text-slate-400 hover:text-rose-500 p-2 min-w-[44px] min-h-[44px]"
               >
                 <Trash2 className="w-5 h-5" />
@@ -92,16 +94,16 @@ export default function Profiles() {
             className="card !p-5 min-h-[180px] flex flex-col items-center justify-center gap-2 border-2 border-dashed border-brand-500 text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-700/20 active:scale-95 transition"
           >
             <Plus className="w-12 h-12" />
-            <div className="font-black">הוסף ילד</div>
+            <div className="font-black">{t('addKid')}</div>
           </button>
         )}
       </div>
 
       {showNew && (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="card space-y-4">
-          <h2 className="text-2xl font-black">פרופיל חדש</h2>
+          <h2 className="text-2xl font-black">{t('newProfile')}</h2>
           <div>
-            <label className="block text-start font-bold mb-2">בחר אווטאר</label>
+            <label className="block text-start font-bold mb-2">{t('avatar')}</label>
             <div className="grid grid-cols-6 gap-2">
               {AVATARS.map((a) => (
                 <button
@@ -117,29 +119,29 @@ export default function Profiles() {
             </div>
           </div>
           <div>
-            <label className="block text-start font-bold mb-2">איך קוראים לו/לה?</label>
+            <label className="block text-start font-bold mb-2">{t('childName')}</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="השם של הילד"
+              placeholder={t('childNamePh')}
               dir="auto"
               maxLength={20}
               className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 px-4 py-4 text-lg text-start focus:border-brand-500 focus:outline-none"
             />
           </div>
           <div>
-            <label className="block text-start font-bold mb-2">מאיפה?</label>
+            <label className="block text-start font-bold mb-2">{t('fromWhere')}</label>
             <input
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              placeholder="עיר בישראל"
+              placeholder={t('cityPh')}
               dir="auto"
               maxLength={30}
               className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 px-4 py-4 text-lg text-start focus:border-brand-500 focus:outline-none"
             />
           </div>
           <div>
-            <label className="block text-start font-bold mb-2">בן/בת כמה?</label>
+            <label className="block text-start font-bold mb-2">{t('howOld')}</label>
             <div className="grid grid-cols-7 gap-1.5">
               {[2, 3, 4, 5, 6, 7, 8].map((a) => (
                 <button
@@ -155,8 +157,8 @@ export default function Profiles() {
             </div>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => setShowNew(false)} className="btn-ghost flex-1">ביטול</button>
-            <button onClick={create} disabled={!name.trim()} className="btn-primary flex-1 disabled:opacity-50">צור פרופיל</button>
+            <button onClick={() => setShowNew(false)} className="btn-ghost flex-1">{t('cancel')}</button>
+            <button onClick={create} disabled={!name.trim()} className="btn-primary flex-1 disabled:opacity-50">{t('create')}</button>
           </div>
         </motion.div>
       )}
@@ -169,14 +171,14 @@ export default function Profiles() {
             className="card max-w-sm w-full text-center"
           >
             <Trash2 className="w-12 h-12 text-rose-500 mx-auto mb-3" />
-            <h3 className="text-xl font-black mb-2">למחוק את הפרופיל?</h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-4">כל ההתקדמות תימחק ולא ניתן יהיה לשחזר.</p>
+            <h3 className="text-xl font-black mb-2">{t('deleteProfile')}</h3>
+            <p className="text-slate-600 dark:text-slate-400 mb-4">{t('deleteWarning')}</p>
             <div className="flex gap-3">
-              <button onClick={() => setConfirmDelete(null)} className="btn-ghost flex-1">ביטול</button>
+              <button onClick={() => setConfirmDelete(null)} className="btn-ghost flex-1">{t('cancel')}</button>
               <button
                 onClick={() => { deleteProfile(confirmDelete); setConfirmDelete(null); }}
                 className="btn flex-1 bg-rose-500 text-white"
-              >מחק</button>
+              >{t('delete')}</button>
             </div>
           </motion.div>
         </div>

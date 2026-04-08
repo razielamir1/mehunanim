@@ -11,6 +11,7 @@ import { sfx, haptic } from '@/lib/sound';
 import { askGemini } from '@/lib/gemini';
 import { cn } from '@/lib/cn';
 import { useSpeak } from '@/hooks/useSpeak';
+import { useT } from '@/i18n';
 
 const ROUND = 5;
 
@@ -23,15 +24,18 @@ const burst = () =>
   });
 
 export default function Play() {
+  const t = useT();
   const { gameId = 'pattern' } = useParams();
   const nav = useNavigate();
   const ttsOn = useStore((s) => s.ttsOn);
   const age = useStore((s) => s.age);
+  const locale = useStore((s) => s.locale);
   const addStar = useStore((s) => s.addStar);
   const recordAttempt = useStore((s) => s.recordAttempt);
   const bumpStreak = useStore((s) => s.bumpStreak);
   const streak = useStore((s) => s.streak);
-  const meta = GAMES.find((g) => g.id === gameId)!;
+  const rawMeta = GAMES.find((g) => g.id === gameId)!;
+  const meta = { ...rawMeta, title: locale === 'en' ? rawMeta.titleEn : rawMeta.title };
   const [level] = useState(() => getCurrentLevel(gameId));
   const isToddler = age <= 3;
 
@@ -99,8 +103,8 @@ export default function Play() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <Link to="/dashboard" aria-label="חזרה לבית" className="btn-ghost !min-h-[48px] !px-4 !py-2 text-sm">
-          <ArrowRight className="w-4 h-4" /> חזרה
+        <Link to="/dashboard" aria-label={t('backHome')} className="btn-ghost !min-h-[48px] !px-4 !py-2 text-sm">
+          <ArrowRight className="w-4 h-4" /> {t('back')}
         </Link>
         <div className="flex items-center gap-3">
           {streak >= 2 && (
@@ -108,7 +112,7 @@ export default function Play() {
               <Flame className="w-4 h-4" /> {streak}
             </div>
           )}
-          <div className="text-sm font-bold text-slate-500 dark:text-slate-400">רמה {level} • {idx + 1}/{ROUND}</div>
+          <div className="text-sm font-bold text-slate-500 dark:text-slate-400">{t('level')} {level} • {idx + 1}/{ROUND}</div>
         </div>
       </div>
 
@@ -129,19 +133,10 @@ export default function Play() {
         >
           <div
             className="inline-flex items-center gap-2 bg-brand-50 dark:bg-brand-700/30 text-brand-700 dark:text-brand-100 px-4 py-1.5 rounded-full text-sm font-bold mb-2"
-            aria-label={q.dir === 'rtl' ? 'כיוון קריאה: מימין לשמאל' : 'כיוון קריאה: משמאל לימין'}
+            aria-label={q.dir === 'rtl' ? t('rtlAria') : t('ltrAria')}
           >
-            {q.dir === 'rtl' ? (
-              <>
-                <ArrowLeftRight className="w-4 h-4" />
-                קרא מימין לשמאל ←
-              </>
-            ) : (
-              <>
-                <ArrowLeftRight className="w-4 h-4" />
-                → קרא משמאל לימין
-              </>
-            )}
+            <ArrowLeftRight className="w-4 h-4" />
+            {q.dir === 'rtl' ? t('readDirRtl') : t('readDirLtr')}
           </div>
           <div className="flex items-start justify-center gap-2">
             <div
@@ -156,7 +151,7 @@ export default function Play() {
             </div>
             <button
               onClick={() => speak(q.prompt, { force: true })}
-              aria-label="הקרא בקול"
+              aria-label={t('speakBtn')}
               className="mt-3 p-3 rounded-full bg-brand-50 dark:bg-brand-700/30 text-brand-700 dark:text-brand-100 hover:scale-110 active:scale-95 transition min-w-[56px] min-h-[56px] flex items-center justify-center"
             >
               <Volume2 className={isToddler ? 'w-8 h-8' : 'w-6 h-6'} />
@@ -194,12 +189,12 @@ export default function Play() {
         <Mascot pose={pose as any} size={70} />
         <button onClick={() => ask('hint')} disabled={loading !== null || picked !== null}
           className="btn-ghost !min-h-[52px] text-base disabled:opacity-50">
-          {loading === 'hint' ? <Sparkles className="w-5 h-5 animate-spin" /> : <Lightbulb className="w-5 h-5" />} רמז
+          {loading === 'hint' ? <Sparkles className="w-5 h-5 animate-spin" /> : <Lightbulb className="w-5 h-5" />} {t('hintBtn')}
         </button>
         {picked !== null && (
           <button onClick={() => ask('explain')} disabled={loading !== null}
             className="btn-ghost !min-h-[52px] text-base disabled:opacity-50">
-            {loading === 'explain' ? <Sparkles className="w-5 h-5 animate-spin" /> : <BookOpen className="w-5 h-5" />} הסבר
+            {loading === 'explain' ? <Sparkles className="w-5 h-5 animate-spin" /> : <BookOpen className="w-5 h-5" />} {t('explainBtn')}
           </button>
         )}
       </div>

@@ -21,9 +21,11 @@ export default function Landing() {
   const [city, setCity] = useState(exCity);
   const [avatar, setAvatar] = useState(exAvatar);
 
+  const locale = useStore((s) => s.locale);
   const start = () => {
     sfx.tap(); haptic();
-    setProfile({ name: name.trim() || 'חבר', age, city: city.trim(), avatar });
+    const fallbackName = locale === 'en' ? 'Friend' : 'חבר';
+    setProfile({ name: name.trim() || fallbackName, age, city: city.trim(), avatar });
     nav('/dashboard');
   };
 

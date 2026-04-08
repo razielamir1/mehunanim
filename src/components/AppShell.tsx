@@ -11,7 +11,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const showNav = pathname !== '/';
   return (
     <div className="min-h-full flex flex-col">
-      <a href="#main-content" className="skip-link">דלג לתוכן הראשי</a>
+      <a href="#main-content" className="skip-link">{t('skipToContent')}</a>
       <WorldBackground />
       <main
         id="main-content"
