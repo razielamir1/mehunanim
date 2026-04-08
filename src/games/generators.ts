@@ -178,6 +178,10 @@ const ANALOGIES: Analogy[] = [
   { a: 'עָמִית', b: 'רֵעַ', c: 'מַתָּנָה', d: 'דּוֹרוֹן', distractors: ['מִלָּה', 'אִישׁ', 'שָׁחֹר'], minLevel: 6 },
   { a: 'יוֹנָה', b: 'הוֹמָה', c: 'זְאֵב', d: 'מְיַלֵּל', distractors: ['זְבוּב', 'חֲמוֹר', 'גָּמָל'], minLevel: 6 },
   { a: 'חֻלְצָה', b: 'בַּד', c: 'מַרְאָה', d: 'זְכוּכִית', distractors: ['מַדָּף', 'טוּשׁ', 'עִפָּרוֹן'], minLevel: 6 },
+  // From מבחן 2025 — verbal relationship "action : doer"
+  { a: 'לָעוּף', b: 'נַחֲלִיאֵלִי', c: 'לִשְׁאֹג', d: 'אַרְיֵה', distractors: ['לָצוּד', 'לָרוּץ', 'לֶאֱכֹל'], minLevel: 6 },
+  // category : type
+  { a: 'אֲפֻדָּה', b: 'בֶּגֶד', c: 'מַבְרֵג', d: 'כְּלִי עֲבוֹדָה', distractors: ['גּוּפִיָּה', 'מִשְׁפָּחָה', 'צֶמֶר'], minLevel: 7 },
 ];
 
 export function genAnalogy(level: number, age: number, bypass = false): MCQ {
@@ -490,6 +494,41 @@ function genWordProblem(L: number): MCQ {
         hintContext: `כְּפוֹל שְׂכָר שָׁעָה בְּמִסְפַּר הַשָּׁעוֹת`, dir: 'rtl',
       };
     },
+    // Lose then gain — collectible cards (from machon-noam 2025)
+    () => {
+      const start = rand(15, 30);
+      const lost = rand(8, start - 5);
+      const gained = rand(3, 12);
+      const ans = start - lost + gained;
+      const { options, correctIdx } = buildOptions(
+        String(ans),
+        [String(start - lost), String(start + gained), String(ans - 1), String(ans + 3)].filter((v) => v !== String(ans) && Number(v) > 0),
+        () => String(Math.max(1, ans + rand(1, 5)))
+      );
+      const name = pick(['רֹון', 'תָּמָר', 'יוֹאָב', 'מַאיָה']);
+      return {
+        prompt: `לְפְנֵי הַהַפְסָקָה הָיוּ לְ${name} ${start} גּוֹגוֹאִים. בַּהַפְסָקָה הָרִאשׁוֹנָה הִפְסִיד ${lost} גּוֹגוֹאִים, אַךְ בַּהַפְסָקָה הַשְּׁנִיָּה הִרְוִיחַ ${gained} גּוֹגוֹאִים. כַּמָּה גּוֹגוֹאִים נִשְׁאֲרוּ לְ${name} בְּסוֹף הַהַפְסָקָה הַשְּׁנִיָּה?`,
+        options, correct: correctIdx,
+        hintContext: `קֹדֶם חַסֵּר מָה שֶׁהִפְסִיד, וְאָז הוֹסֵף מָה שֶׁהִרְוִיחַ`, dir: 'rtl',
+      };
+    },
+    // Rate per time (from machon-noam 2025)
+    () => {
+      const perUnit = pick([2, 3, 4, 5]);
+      const baseSec = 5;
+      const targetSec = 10;
+      const ans = perUnit * baseSec * (targetSec / baseSec);
+      const { options, correctIdx } = buildOptions(
+        String(ans),
+        [String(perUnit * baseSec), String(ans + perUnit), String(ans - 2), String(perUnit + targetSec)].filter((v) => v !== String(ans) && Number(v) > 0),
+        () => String(ans + rand(1, 5))
+      );
+      return {
+        prompt: `רוֹנִי קוֹפֶצֶת בְּדַלְגִּית. בְּ-${baseSec} שְׁנִיּוֹת רוֹנִי קוֹפֶצֶת ${perUnit * baseSec} פְּעָמִים. כַּמָּה פְּעָמִים תִּקְפֹּץ רוֹנִי בְּ-${targetSec} שְׁנִיּוֹת?`,
+        options, correct: correctIdx,
+        hintContext: `אִם זֶה קוֹרֶה כְּפוֹל זְמַן, הַקְּפִיצוֹת גַּם כְּפוּלוֹת`, dir: 'rtl',
+      };
+    },
     // Change from a bill
     () => {
       const bill = pick([10, 20, 50]);
@@ -741,6 +780,22 @@ const CLOZES: ClozeQ[] = [
     options: ['וְעָרַכְתִּי', 'וְשָׁזַרְתִּי', 'שָׁמַעְתִּי', 'צְהֻבִּים'],
     correct: 1,
     hint: 'מָה עוֹשִׂים מִפְּרָחִים כְּדֵי לִבְנוֹת זֵר?',
+    minLevel: 7,
+  },
+  // From מבחן 2025 — beds context
+  {
+    prompt: '____ אֶת מִטָּתִי לִפְנֵי שֶׁהָלַכְתִּי לְבֵית הַסֵּפֶר.',
+    options: ['הִלְבַּשְׁתִּי', 'יָשַׁנְתִּי', 'קַמְתִּי', 'הִצַּעְתִּי'],
+    correct: 3,
+    hint: 'מָה עוֹשִׂים לְמִטָּה אַחֲרֵי שֶׁקָּמִים?',
+    minLevel: 6,
+  },
+  // sharing food context
+  {
+    prompt: 'לִיהִי ____ לַחְלֹק עִם חֲבֶרְתָּהּ אֶת הַכָּרִיךְ שֶׁהֵבִיאָה מִבֵּיתָהּ, מִשּׁוּם שֶׁהָיְתָה רְעֵבָה מְאֹד.',
+    options: ['סֵרְבָה', 'הִסְכִּימָה', 'קֵרְבָה', 'רָצְתָה'],
+    correct: 0,
+    hint: 'אִם הִיא רְעֵבָה, הִיא לֹא תִּרְצֶה לַחְלֹק',
     minLevel: 7,
   },
 ];
