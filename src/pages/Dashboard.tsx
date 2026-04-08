@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star, Award, GraduationCap } from 'lucide-react';
+import { Star, Award, GraduationCap, Lock } from 'lucide-react';
 import Mascot from '@/components/WorldMascot';
 import Tutorial from '@/components/Tutorial';
 import { useStore, getCurrentLevel } from '@/store/useStore';
-import { gamesForAge, localizeGame } from '@/games';
+import { gamesWithLockState, localizeGame } from '@/games';
 import { useT } from '@/i18n';
 
 export default function Dashboard() {
@@ -19,12 +19,12 @@ export default function Dashboard() {
   const profiles = useStore((s) => s.profiles);
   const activeId = useStore((s) => s.activeProfileId);
   const updateActive = useStore((s) => s.updateActive);
-  const games = gamesForAge(age);
+  const activeProfile = profiles.find((p) => p.id === activeId);
+  const games = gamesWithLockState(age, levels, activeProfile?.levelOverride);
   const totalLvls = Object.values(levels);
   const avgLevel = totalLvls.length ? (totalLvls.reduce((a, b) => a + b, 0) / totalLvls.length).toFixed(1) : '1';
 
   // Show tutorial on first visit per profile
-  const activeProfile = profiles.find((p) => p.id === activeId);
   const [showTutorial, setShowTutorial] = useState(false);
   useEffect(() => {
     if (activeProfile && !activeProfile.tutorialSeen) {
@@ -89,6 +89,26 @@ export default function Dashboard() {
         {games.map((rawG, i) => {
           const g = localizeGame(rawG, locale);
           const lvl = getCurrentLevel(g.id);
+          const unlocked = (rawG as any).unlocked;
+          if (!unlocked) {
+            return (
+              <motion.div
+                key={g.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06 }}
+                className="rounded-3xl p-5 bg-slate-200 dark:bg-slate-800 min-h-[140px] relative overflow-hidden cursor-not-allowed"
+                aria-disabled="true"
+              >
+                <div className="absolute top-2 left-2 bg-slate-400/40 backdrop-blur rounded-full px-2 py-0.5 text-xs font-black text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> L{rawG.minLevel}
+                </div>
+                <div className="text-4xl mb-2 grayscale opacity-50">{g.emoji}</div>
+                <div className="font-black text-lg leading-tight text-slate-500 dark:text-slate-400">{g.title}</div>
+                <div className="text-sm text-slate-400 dark:text-slate-500">{g.subtitle}</div>
+              </motion.div>
+            );
+          }
           return (
             <motion.div key={g.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
               <Link

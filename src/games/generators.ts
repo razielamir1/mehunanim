@@ -24,6 +24,7 @@ const shuffle = <T,>(arr: T[]): T[] => {
 const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 // Cap level by age — a 4yo can max-out at level 3, etc. This protects from over-difficulty.
+// Parents can bypass this by setting levelOverride in the profile.
 const ageCap = (age: number): number => {
   if (age <= 3) return 2;
   if (age === 4) return 3;
@@ -32,7 +33,9 @@ const ageCap = (age: number): number => {
   if (age === 7) return 7;
   return 8;
 };
-const cappedLevel = (level: number, age: number) => Math.min(level, ageCap(age));
+// If `bypassAgeCap` is true (parent override active), level is used as-is.
+const cappedLevel = (level: number, age: number, bypassAgeCap = false) =>
+  bypassAgeCap ? level : Math.min(level, ageCap(age));
 
 const buildOptions = (correct: string, candidates: string[], pad: () => string) => {
   const seen = new Set<string>([correct]);
@@ -55,8 +58,8 @@ const buildOptions = (correct: string, candidates: string[], pad: () => string) 
 // =============================================================
 const SHAPES = ['🔴', '🟦', '🟢', '🟡', '🔺', '⬛', '⭐', '❤️', '💜', '🟧'];
 
-export function genPattern(level: number, age: number): MCQ {
-  const L = cappedLevel(level, age);
+export function genPattern(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
   const poolSize = L <= 1 ? 2 : L <= 3 ? 2 : L <= 5 ? 3 : 4;
   const reps = L <= 2 ? 2 : 3;
   const pool = shuffle(SHAPES).slice(0, poolSize);
@@ -85,28 +88,28 @@ export function genPattern(level: number, age: number): MCQ {
 type OddGroup = { items: string[]; odd: string; cat: string; minLevel: number };
 const ODD_GROUPS: OddGroup[] = [
   // L1-2: visual
-  { items: ['🍎', '🍌', '🍇'], odd: '🚗', cat: 'פירות', minLevel: 1 },
-  { items: ['🐶', '🐱', '🐮'], odd: '🚲', cat: 'בעלי חיים', minLevel: 1 },
-  { items: ['🔴', '🔵', '🟢'], odd: '⬛', cat: 'צבעי הקשת', minLevel: 1 },
+  { items: ['🍎', '🍌', '🍇'], odd: '🚗', cat: 'פֵּרוֹת', minLevel: 1 },
+  { items: ['🐶', '🐱', '🐮'], odd: '🚲', cat: 'בַּעֲלֵי חַיִּים', minLevel: 1 },
+  { items: ['🔴', '🔵', '🟢'], odd: '⬛', cat: 'צִבְעֵי הַקֶּשֶׁת', minLevel: 1 },
   // L3-4: simple words
-  { items: ['כלב', 'חתול', 'סוס', 'פרה'], odd: 'אוטובוס', cat: 'בעלי חיים', minLevel: 3 },
-  { items: ['תפוח', 'בננה', 'ענבים', 'תות'], odd: 'כיסא', cat: 'פירות', minLevel: 3 },
-  { items: ['אדום', 'כחול', 'ירוק', 'צהוב'], odd: 'מרובע', cat: 'צבעים', minLevel: 3 },
-  { items: ['עיפרון', 'עט', 'מחק', 'מחברת'], odd: 'תפוז', cat: 'כלי כתיבה', minLevel: 3 },
-  { items: ['יד', 'רגל', 'ראש', 'אוזן'], odd: 'שולחן', cat: 'איברי גוף', minLevel: 3 },
+  { items: ['כֶּלֶב', 'חָתוּל', 'סוּס', 'פָּרָה'], odd: 'אוֹטוֹבּוּס', cat: 'בַּעֲלֵי חַיִּים', minLevel: 3 },
+  { items: ['תַּפּוּחַ', 'בָּנָנָה', 'עֲנָבִים', 'תּוּת'], odd: 'כִּסֵּא', cat: 'פֵּרוֹת', minLevel: 3 },
+  { items: ['אָדֹם', 'כָּחֹל', 'יָרֹק', 'צָהֹב'], odd: 'מְרֻבָּע', cat: 'צְבָעִים', minLevel: 3 },
+  { items: ['עִפָּרוֹן', 'עֵט', 'מַחַק', 'מַחְבֶּרֶת'], odd: 'תַּפּוּז', cat: 'כְּלֵי כְּתִיבָה', minLevel: 3 },
+  { items: ['יָד', 'רֶגֶל', 'רֹאשׁ', 'אֹזֶן'], odd: 'שֻׁלְחָן', cat: 'אֵיבְרֵי גּוּף', minLevel: 3 },
   // L5-6: fine distinctions
-  { items: ['אופניים', 'מכונית', 'אוטובוס', 'משאית'], odd: 'עץ', cat: 'כלי תחבורה', minLevel: 5 },
-  { items: ['רופא', 'מורה', 'נהג', 'טבח'], odd: 'מקרר', cat: 'מקצועות', minLevel: 5 },
-  { items: ['חורף', 'אביב', 'קיץ', 'סתיו'], odd: 'יום שני', cat: 'עונות השנה', minLevel: 5 },
-  // L7-8: real exam-style — culture/geography (from sim 1, sim 2)
-  { items: ['חיפה', 'ירושלים', 'באר שבע'], odd: 'שדה בוקר', cat: 'ערים בישראל', minLevel: 7 },
-  { items: ['אבוקדו'], odd: 'תפוח-אדמה', cat: 'פרי (השאר ירק)', minLevel: 7 },
-  { items: ['יתוש', 'חרגול', 'נמלה'], odd: 'סוס יאור', cat: 'חרקים', minLevel: 7 },
-  { items: ['יוון', 'ישראל', 'ירדן'], odd: 'איטליה', cat: 'מדינות במזרח התיכון', minLevel: 7 },
+  { items: ['אוֹפַנַּיִם', 'מְכוֹנִית', 'אוֹטוֹבּוּס', 'מַשָּׂאִית'], odd: 'עֵץ', cat: 'כְּלֵי תַּחְבּוּרָה', minLevel: 5 },
+  { items: ['רוֹפֵא', 'מוֹרֶה', 'נֶהָג', 'טַבָּח'], odd: 'מְקָרֵר', cat: 'מִקְצוֹעוֹת', minLevel: 5 },
+  { items: ['חֹרֶף', 'אָבִיב', 'קַיִץ', 'סְתָו'], odd: 'יוֹם שֵׁנִי', cat: 'עוֹנוֹת הַשָּׁנָה', minLevel: 5 },
+  // L7-8: real exam-style
+  { items: ['חֵיפָה', 'יְרוּשָׁלַיִם', 'בְּאֵר שֶׁבַע'], odd: 'שְׂדֵה בּוֹקֵר', cat: 'עָרִים בְּיִשְׂרָאֵל', minLevel: 7 },
+  { items: ['אֲבוֹקָדוֹ'], odd: 'תַּפּוּחַ-אֲדָמָה', cat: 'פְּרִי (הַשְּׁאָר יָרָק)', minLevel: 7 },
+  { items: ['יַתּוּשׁ', 'חַרְגּוֹל', 'נְמָלָה'], odd: 'סוּס יְאוֹר', cat: 'חֲרָקִים', minLevel: 7 },
+  { items: ['יָוָן', 'יִשְׂרָאֵל', 'יַרְדֵּן'], odd: 'אִיטַלְיָה', cat: 'מְדִינוֹת בַּמִּזְרָח הַתִּיכוֹן', minLevel: 7 },
 ];
 
-export function genOdd(level: number, age: number): MCQ {
-  const L = cappedLevel(level, age);
+export function genOdd(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
   const eligible = ODD_GROUPS.filter((g) => g.minLevel <= L);
   const g = pick(eligible);
   const items = g.items.length >= 3 ? g.items.slice(0, 3) : g.items;
@@ -114,11 +117,11 @@ export function genOdd(level: number, age: number): MCQ {
   const allOptions = shuffle([...items, g.odd]);
   return {
     prompt: items.length === 1
-      ? `איזה מהבאים שייך לקבוצה: ${items[0]}? (החריג מקבוצה אחרת)`
-      : 'איזה מהבאים יוצא דופן?',
+      ? `אֵיזֶה מֵהַבָּאִים שַׁיָּךְ לַקְּבוּצָה: ${items[0]}?`
+      : 'אֵיזֶה מֵהַבָּאִים יוֹצֵא דֹּפֶן?',
     options: allOptions,
     correct: allOptions.indexOf(g.odd),
-    hintContext: `שלוש מהמילים הן ${g.cat}`,
+    hintContext: `שָׁלוֹשׁ מֵהַמִּלִּים הֵן ${g.cat}`,
     dir: 'rtl',
   };
 }
@@ -127,8 +130,8 @@ export function genOdd(level: number, age: number): MCQ {
 // SEQUENCE — number sequence
 // L1: count 1,2,? L2: 1,2,3,? L3: +1,+2 L4: +2,+5 L5: +3 L6-7: +5,+10 L8: complex
 // =============================================================
-export function genSequence(level: number, age: number): MCQ {
-  const L = cappedLevel(level, age);
+export function genSequence(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
   let start: number, step: number;
   if (L === 1) { start = 1; step = 1; }
   else if (L === 2) { start = rand(1, 3); step = 1; }
@@ -150,7 +153,7 @@ export function genSequence(level: number, age: number): MCQ {
     prompt: `${seq.join(' , ')} , ?`,
     options,
     correct: correctIdx,
-    hintContext: `בכל פעם מוסיפים ${step}`,
+    hintContext: `בְּכָל פַּעַם מוֹסִיפִים ${step}`,
     dir: 'ltr',
   };
 }
@@ -160,20 +163,19 @@ export function genSequence(level: number, age: number): MCQ {
 // =============================================================
 type Analogy = { a: string; b: string; c: string; d: string; distractors: string[]; minLevel: number };
 const ANALOGIES: Analogy[] = [
-  { a: 'חתול', b: 'חתלתול', c: 'כלב', d: 'גור', distractors: ['עכבר', 'פיל', 'דג'], minLevel: 3 },
-  { a: 'יום', b: 'לילה', c: 'שמש', d: 'ירח', distractors: ['כוכב', 'ענן', 'שמיים'], minLevel: 3 },
-  { a: 'ציפור', b: 'עפה', c: 'דג', d: 'שוחה', distractors: ['רץ', 'קופץ', 'הולך'], minLevel: 3 },
-  { a: 'חם', b: 'קר', c: 'גדול', d: 'קטן', distractors: ['ארוך', 'עגול', 'כבד'], minLevel: 3 },
-  { a: 'רופא', b: 'בית חולים', c: 'מורה', d: 'בית ספר', distractors: ['פארק', 'חוף', 'מסעדה'], minLevel: 4 },
-  { a: 'אוזן', b: 'שמיעה', c: 'עין', d: 'ראייה', distractors: ['ריח', 'טעם', 'מגע'], minLevel: 5 },
-  { a: 'גוזל', b: 'ציפור', c: 'גור', d: 'כלב', distractors: ['חתול', 'אריה', 'דב'], minLevel: 5 },
-  // From sim — synonyms/groups
-  { a: 'נגר', b: 'עץ', c: 'צורף', d: 'זהב', distractors: ['נייר', 'בד', 'אבן'], minLevel: 7 },
-  { a: 'טונה', b: 'דג', c: 'נרקיס', d: 'פרח', distractors: ['חיה', 'יסוד', 'אבן'], minLevel: 7 },
+  { a: 'חָתוּל', b: 'חֲתַלְתּוּל', c: 'כֶּלֶב', d: 'גּוּר', distractors: ['עַכְבָּר', 'פִּיל', 'דָּג'], minLevel: 3 },
+  { a: 'יוֹם', b: 'לַיְלָה', c: 'שֶׁמֶשׁ', d: 'יָרֵחַ', distractors: ['כּוֹכָב', 'עָנָן', 'שָׁמַיִם'], minLevel: 3 },
+  { a: 'צִפּוֹר', b: 'עָפָה', c: 'דָּג', d: 'שׂוֹחֶה', distractors: ['רָץ', 'קוֹפֵץ', 'הוֹלֵךְ'], minLevel: 3 },
+  { a: 'חַם', b: 'קַר', c: 'גָּדוֹל', d: 'קָטָן', distractors: ['אָרֹךְ', 'עָגֹל', 'כָּבֵד'], minLevel: 3 },
+  { a: 'רוֹפֵא', b: 'בֵּית חוֹלִים', c: 'מוֹרֶה', d: 'בֵּית סֵפֶר', distractors: ['פַּארְק', 'חוֹף', 'מִסְעָדָה'], minLevel: 4 },
+  { a: 'אֹזֶן', b: 'שְׁמִיעָה', c: 'עַיִן', d: 'רְאִיָּה', distractors: ['רֵיחַ', 'טַעַם', 'מַגָּע'], minLevel: 5 },
+  { a: 'גּוֹזָל', b: 'צִפּוֹר', c: 'גּוּר', d: 'כֶּלֶב', distractors: ['חָתוּל', 'אַרְיֵה', 'דֹּב'], minLevel: 5 },
+  { a: 'נַגָּר', b: 'עֵץ', c: 'צוֹרֵף', d: 'זָהָב', distractors: ['נְיָר', 'בַּד', 'אֶבֶן'], minLevel: 7 },
+  { a: 'טוּנָה', b: 'דָּג', c: 'נַרְקִיס', d: 'פֶּרַח', distractors: ['חַיָּה', 'יְסוֹד', 'אֶבֶן'], minLevel: 7 },
 ];
 
-export function genAnalogy(level: number, age: number): MCQ {
-  const L = cappedLevel(level, age);
+export function genAnalogy(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
   const eligible = ANALOGIES.filter((q) => q.minLevel <= L);
   const q = pick(eligible);
   const options = shuffle([q.d, ...q.distractors]);
@@ -181,7 +183,7 @@ export function genAnalogy(level: number, age: number): MCQ {
     prompt: `${q.a} : ${q.b} :: ${q.c} : ?`,
     options,
     correct: options.indexOf(q.d),
-    hintContext: `מה היחס בין ${q.a} ל-${q.b}?`,
+    hintContext: `מָה הַיַּחַס בֵּין ${q.a} לְ-${q.b}?`,
     dir: 'rtl',
   };
 }
@@ -189,8 +191,8 @@ export function genAnalogy(level: number, age: number): MCQ {
 // =============================================================
 // MEMORY — sequence length scales with age
 // =============================================================
-export function genMemory(level: number, age: number): MCQ {
-  const L = cappedLevel(level, age);
+export function genMemory(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
   const len = Math.min(2 + Math.floor(L / 2), 7);
   const seq = shuffle(SHAPES).slice(0, len);
   const idx = rand(0, len - 1);
@@ -201,10 +203,10 @@ export function genMemory(level: number, age: number): MCQ {
     () => pick(SHAPES.filter((s) => s !== answer))
   );
   return {
-    prompt: `זכור: ${seq.join(' ')}  •  מה היה במקום ה-${idx + 1}?`,
+    prompt: `זְכֹר: ${seq.join(' ')}  •  מָה הָיָה בַּמָּקוֹם הַ-${idx + 1}?`,
     options,
     correct: correctIdx,
-    hintContext: `ספור מימין לשמאל`,
+    hintContext: `סְפֹר מִיָּמִין לִשְׂמֹאל`,
     dir: 'rtl',
   };
 }
@@ -213,8 +215,8 @@ export function genMemory(level: number, age: number): MCQ {
 // MATH — leveled arithmetic + word problems (ages 2-8)
 // L1: 1+1, count L2: +up to 5 L3: +/- up to 10 L4: +/- up to 20 L5: ×basic L6: 2-step L7: 3-step L8: real exam
 // =============================================================
-export function genMath(level: number, age: number): MCQ {
-  const L = cappedLevel(level, age);
+export function genMath(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
   // Word problems start at L4
   if (L >= 4 && Math.random() < (L >= 6 ? 0.7 : 0.4)) return genWordProblem(L);
 
@@ -241,7 +243,7 @@ export function genMath(level: number, age: number): MCQ {
     prompt: `${a} ${op} ${b} = ?`,
     options,
     correct: correctIdx,
-    hintContext: `חשב צעד אחר צעד`,
+    hintContext: `חַשֵּׁב צַעַד אַחַר צַעַד`,
     dir: 'ltr',
   };
 }
@@ -259,9 +261,9 @@ function genWordProblem(L: number): MCQ {
         () => String(ans + rand(1, 4))
       );
       return {
-        prompt: `יש לי ${a} תפוחים וקיבלתי עוד ${b}. כמה תפוחים יש לי עכשיו?`,
+        prompt: `יֵשׁ לִי ${a} תַּפּוּחִים וְקִבַּלְתִּי עוֹד ${b}. כַּמָּה תַּפּוּחִים יֵשׁ לִי עַכְשָׁיו?`,
         options, correct: correctIdx,
-        hintContext: `ספור את כל התפוחים`, dir: 'rtl',
+        hintContext: `סְפֹר אֶת כָּל הַתַּפּוּחִים`, dir: 'rtl',
       };
     },
     // L4: simple sharing
@@ -275,9 +277,9 @@ function genWordProblem(L: number): MCQ {
         () => String(each + rand(1, 4))
       );
       return {
-        prompt: `${kids} ילדים חולקים ${total} סוכריות בשווה. כמה כל ילד מקבל?`,
+        prompt: `${kids} יְלָדִים חוֹלְקִים ${total} סֻכָּרִיּוֹת בְּשָׁוֶה. כַּמָּה כָּל יֶלֶד מְקַבֵּל?`,
         options, correct: correctIdx,
-        hintContext: `חלק שווה בשווה`, dir: 'rtl',
+        hintContext: `חַלֵּק שָׁוֶה בְּשָׁוֶה`, dir: 'rtl',
       };
     },
   ];
@@ -295,9 +297,9 @@ function genWordProblem(L: number): MCQ {
         () => String(Math.max(0, ans + rand(1, 10)))
       );
       return {
-        prompt: `יש לי ${wallet} ₪. אני קונה ${qty} משחקים בעלות של ${itemPrice} ₪ כל אחד. כמה כסף יישאר לי?`,
+        prompt: `יֵשׁ לִי ${wallet} ₪. אֲנִי קוֹנֶה ${qty} מִשְׂחָקִים בְּעָלוּת שֶׁל ${itemPrice} ₪ כָּל אֶחָד. כַּמָּה כֶּסֶף יִישָּׁאֵר לִי?`,
         options, correct: correctIdx,
-        hintContext: `קודם חשב כמה עולים ${qty} משחקים, ואז חסר`, dir: 'rtl',
+        hintContext: `קֹדֶם חַשֵּׁב כַּמָּה עוֹלִים ${qty} מִשְׂחָקִים, וְאָז חַסֵּר`, dir: 'rtl',
       };
     },
     // L6: change over time
@@ -312,9 +314,9 @@ function genWordProblem(L: number): MCQ {
         () => String(Math.max(0, ans + rand(1, 5)))
       );
       return {
-        prompt: `בכיתה היו ${start} ילדים. הגיעו עוד ${added}, ואז ${removed} הלכו הביתה. כמה נשארו?`,
+        prompt: `בַּכִּתָּה הָיוּ ${start} יְלָדִים. הִגִּיעוּ עוֹד ${added}, וְאָז ${removed} הָלְכוּ הַבַּיְתָה. כַּמָּה נִשְׁאֲרוּ?`,
         options, correct: correctIdx,
-        hintContext: `קודם הוסף, ואחר כך חסר`, dir: 'rtl',
+        hintContext: `קֹדֶם הוֹסֵף, וְאַחַר כָּךְ חַסֵּר`, dir: 'rtl',
       };
     },
     // L6: time/duration
@@ -419,41 +421,41 @@ function genWordProblem(L: number): MCQ {
 type Passage = { text: string; q: string; options: string[]; correct: number; hint: string; minLevel: number };
 const PASSAGES: Passage[] = [
   {
-    text: 'דנה הלכה לפארק עם הכלב שלה רקס. בפארק הם פגשו את שירה ואת הכלב שלה לולה. הילדות שיחקו יחד עד שהשמש התחילה לרדת.',
-    q: 'מי הם רקס ולולה?',
-    options: ['ילדות', 'כלבים', 'הורים', 'חתולים'],
+    text: 'דָּנָה הָלְכָה לַפַּארְק עִם הַכֶּלֶב שֶׁלָּהּ רֶקְס. בַּפַּארְק הֵם פָּגְשׁוּ אֶת שִׁירָה וְאֶת הַכֶּלֶב שֶׁלָּהּ לוּלָה. הַיְלָדוֹת שִׂחֲקוּ יַחַד עַד שֶׁהַשֶּׁמֶשׁ הִתְחִילָה לָרֶדֶת.',
+    q: 'מִי הֵם רֶקְס וְלוּלָה?',
+    options: ['יְלָדוֹת', 'כְּלָבִים', 'הוֹרִים', 'חֲתוּלִים'],
     correct: 1,
-    hint: 'קרא שוב את המשפט הראשון',
+    hint: 'קְרָא שׁוּב אֶת הַמִּשְׁפָּט הָרִאשׁוֹן',
     minLevel: 4,
   },
   {
-    text: 'יואב אוהב לקרוא ספרים על חלל. בכל ערב הוא קורא פרק לפני השינה. אמא שלו קנתה לו ספר חדש על הירח.',
-    q: 'על מה הספר החדש של יואב?',
-    options: ['חיות', 'הירח', 'ספורט', 'אוכל'],
+    text: 'יוֹאָב אוֹהֵב לִקְרֹא סְפָרִים עַל חָלָל. בְּכָל עֶרֶב הוּא קוֹרֵא פֶּרֶק לִפְנֵי הַשֵּׁנָה. אִמָּא שֶׁלּוֹ קָנְתָה לוֹ סֵפֶר חָדָשׁ עַל הַיָּרֵחַ.',
+    q: 'עַל מָה הַסֵּפֶר הֶחָדָשׁ שֶׁל יוֹאָב?',
+    options: ['חַיּוֹת', 'הַיָּרֵחַ', 'סְפּוֹרְט', 'אֹכֶל'],
     correct: 1,
-    hint: 'מה אמא קנתה לו?',
+    hint: 'מָה אִמָּא קָנְתָה לוֹ?',
     minLevel: 4,
   },
   {
-    text: 'בכל יום ראשון מיכל הולכת לחוג ציור. בחוג היא לומדת לצייר עם פסטל. בסוף השנה תהיה תערוכה של כל הציורים שלה ושל הילדים האחרים.',
-    q: 'מה מיכל לומדת בחוג?',
-    options: ['לצייר עם פסטל', 'לפסל', 'לרקוד', 'לשיר'],
+    text: 'בְּכָל יוֹם רִאשׁוֹן מִיכַל הוֹלֶכֶת לְחוּג צִיּוּר. בַּחוּג הִיא לוֹמֶדֶת לְצַיֵּר עִם פַּסְטֶל. בְּסוֹף הַשָּׁנָה תִּהְיֶה תַּעֲרוּכָה שֶׁל כָּל הַצִּיּוּרִים שֶׁלָּהּ וְשֶׁל הַיְלָדִים הָאֲחֵרִים.',
+    q: 'מָה מִיכַל לוֹמֶדֶת בַּחוּג?',
+    options: ['לְצַיֵּר עִם פַּסְטֶל', 'לְפַסֵּל', 'לִרְקֹד', 'לָשִׁיר'],
     correct: 0,
-    hint: 'הסתכל במשפט השני',
+    hint: 'הִסְתַּכֵּל בַּמִּשְׁפָּט הַשֵּׁנִי',
     minLevel: 5,
   },
   {
-    text: 'הציפורים נודדות לאזורים חמים בחורף. הן יוצאות לדרך ארוכה ומסוכנת. רובן חוזרות באביב כדי לבנות קנים ולהטיל ביצים.',
-    q: 'מתי הציפורים נודדות?',
-    options: ['בקיץ', 'באביב', 'בחורף', 'בסתיו'],
+    text: 'הַצִּפֳּרִים נוֹדְדוֹת לָאֲזוֹרִים חַמִּים בַּחֹרֶף. הֵן יוֹצְאוֹת לְדֶרֶךְ אֲרֻכָּה וּמְסֻכֶּנֶת. רֻבָּן חוֹזְרוֹת בָּאָבִיב כְּדֵי לִבְנוֹת קִנִּים וּלְהָטִיל בֵּיצִים.',
+    q: 'מָתַי הַצִּפֳּרִים נוֹדְדוֹת?',
+    options: ['בַּקַּיִץ', 'בָּאָבִיב', 'בַּחֹרֶף', 'בַּסְּתָו'],
     correct: 2,
-    hint: 'בא בתחילת הפסקה',
+    hint: 'בָּא בִּתְחִלַּת הַפִּסְקָה',
     minLevel: 6,
   },
 ];
 
-export function genReading(level: number, age: number): MCQ {
-  const L = cappedLevel(level, age);
+export function genReading(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
   const eligible = PASSAGES.filter((p) => p.minLevel <= L);
   const p = pick(eligible.length ? eligible : PASSAGES);
   return {
@@ -470,29 +472,28 @@ export function genReading(level: number, age: number): MCQ {
 // =============================================================
 type SynonymPair = { word: string; syn: string; distractors: string[]; minLevel: number };
 const SYNONYMS: SynonymPair[] = [
-  { word: 'גדול', syn: 'ענק', distractors: ['קטן', 'נמוך', 'דק'], minLevel: 3 },
-  { word: 'שמח', syn: 'מאושר', distractors: ['עצוב', 'כועס', 'עייף'], minLevel: 3 },
-  { word: 'יפה', syn: 'מקסים', distractors: ['מכוער', 'גדול', 'חכם'], minLevel: 4 },
-  { word: 'מהיר', syn: 'זריז', distractors: ['איטי', 'כבד', 'גדול'], minLevel: 5 },
-  { word: 'חכם', syn: 'נבון', distractors: ['טיפש', 'גבוה', 'חזק'], minLevel: 5 },
-  { word: 'קשה', syn: 'מסובך', distractors: ['קל', 'פשוט', 'נעים'], minLevel: 6 },
-  // From sim
-  { word: 'שיבה', syn: 'זקנה', distractors: ['ילדות', 'נעורים', 'בגרות'], minLevel: 7 },
-  { word: 'סלידה', syn: 'רתיעה', distractors: ['חיבה', 'אהבה', 'משיכה'], minLevel: 7 },
-  { word: 'משויף', syn: 'חלק', distractors: ['מחוספס', 'מעוקם', 'משופע'], minLevel: 8 },
-  { word: 'כריה', syn: 'חפירה', distractors: ['קריאה', 'משיכה', 'קליעה'], minLevel: 8 },
+  { word: 'גָּדוֹל', syn: 'עֲנָק', distractors: ['קָטָן', 'נָמוּךְ', 'דַּק'], minLevel: 3 },
+  { word: 'שָׂמֵחַ', syn: 'מְאֻשָּׁר', distractors: ['עָצוּב', 'כּוֹעֵס', 'עָיֵף'], minLevel: 3 },
+  { word: 'יָפֶה', syn: 'מַקְסִים', distractors: ['מְכֹעָר', 'גָּדוֹל', 'חָכָם'], minLevel: 4 },
+  { word: 'מָהִיר', syn: 'זָרִיז', distractors: ['אִטִּי', 'כָּבֵד', 'גָּדוֹל'], minLevel: 5 },
+  { word: 'חָכָם', syn: 'נָבוֹן', distractors: ['טִפֵּשׁ', 'גָּבוֹהַּ', 'חָזָק'], minLevel: 5 },
+  { word: 'קָשֶׁה', syn: 'מְסֻבָּךְ', distractors: ['קַל', 'פָּשׁוּט', 'נָעִים'], minLevel: 6 },
+  { word: 'שֵׂיבָה', syn: 'זִקְנָה', distractors: ['יַלְדוּת', 'נְעוּרִים', 'בַּגְרוּת'], minLevel: 7 },
+  { word: 'סְלִידָה', syn: 'רְתִיעָה', distractors: ['חִבָּה', 'אַהֲבָה', 'מְשִׁיכָה'], minLevel: 7 },
+  { word: 'מְשֻׁיָּף', syn: 'חָלָק', distractors: ['מְחֻסְפָּס', 'מְעֻקָּם', 'מְשֻׁפָּע'], minLevel: 8 },
+  { word: 'כְּרִיָּה', syn: 'חֲפִירָה', distractors: ['קְרִיאָה', 'מְשִׁיכָה', 'קְלִיעָה'], minLevel: 8 },
 ];
 
-export function genSynonym(level: number, age: number): MCQ {
-  const L = cappedLevel(level, age);
+export function genSynonym(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
   const eligible = SYNONYMS.filter((s) => s.minLevel <= L);
   const q = pick(eligible);
   const options = shuffle([q.syn, ...q.distractors]);
   return {
-    prompt: `איזו מילה יש לה משמעות דומה ל-"${q.word}"?`,
+    prompt: `אֵיזוֹ מִלָּה יֵשׁ לָהּ מַשְׁמָעוּת דּוֹמָה לְ-"${q.word}"?`,
     options,
     correct: options.indexOf(q.syn),
-    hintContext: `חפש את המילה שמבטאת את אותו רעיון`,
+    hintContext: `חַפֵּשׂ אֶת הַמִּלָּה שֶׁמְּבַטֵּאת אֶת אוֹתוֹ רַעְיוֹן`,
     dir: 'rtl',
   };
 }
@@ -502,23 +503,23 @@ export function genSynonym(level: number, age: number): MCQ {
 // =============================================================
 type Idiom = { phrase: string; meaning: string; distractors: string[]; minLevel: number };
 const IDIOMS: Idiom[] = [
-  { phrase: 'הבל הבלים', meaning: 'שטויות, דברים בטלים', distractors: ['רוחות קרות', 'סיפורים היסטוריים', 'בני אדם'], minLevel: 6 },
-  { phrase: 'אליה וקוץ בה', meaning: 'דבר טוב שיש בו גם פגם', distractors: ['חדירת קוץ לרגל', 'תקיפת אדם עם קוץ', 'כתר עשוי קוצים'], minLevel: 7 },
-  { phrase: 'אין כוחו אלא בפיו', meaning: 'מדבר הרבה אבל לא עושה', distractors: ['אדם חזק פיזית', 'ילד שצועק', 'אכלן גדול'], minLevel: 7 },
-  { phrase: 'אין הביישן למד ואין הקפדן מלמד', meaning: 'בישנות מפריעה ללמידה וקפדנות מפריעה להוראה', distractors: ['אסור ללמד ביישנים', 'קפדנים לא צריכים ללמד', 'ביישנים לא יודעים כלום'], minLevel: 8 },
+  { phrase: 'הֶבֶל הֲבָלִים', meaning: 'שְׁטוּיוֹת, דְּבָרִים בְּטֵלִים', distractors: ['רוּחוֹת קָרוֹת', 'סִפּוּרִים הִיסְטוֹרִיִּים', 'בְּנֵי אָדָם'], minLevel: 6 },
+  { phrase: 'אַלְיָה וְקוֹץ בָּהּ', meaning: 'דָּבָר טוֹב שֶׁיֵּשׁ בּוֹ גַּם פְּגָם', distractors: ['חֲדִירַת קוֹץ לָרֶגֶל', 'תְּקִיפַת אָדָם עִם קוֹץ', 'כֶּתֶר עָשׂוּי קוֹצִים'], minLevel: 7 },
+  { phrase: 'אֵין כֹּחוֹ אֶלָּא בְּפִיו', meaning: 'מְדַבֵּר הַרְבֵּה אֲבָל לֹא עוֹשֶׂה', distractors: ['אָדָם חָזָק פִיזִית', 'יֶלֶד שֶׁצּוֹעֵק', 'אַכְלָן גָּדוֹל'], minLevel: 7 },
+  { phrase: 'אֵין הַבַּיְשָׁן לָמֵד וְאֵין הַקַּפְדָן מְלַמֵּד', meaning: 'בַּיְשָׁנוּת מַפְרִיעָה לִלְמִידָה וְקַפְדָנוּת מַפְרִיעָה לְהוֹרָאָה', distractors: ['אָסוּר לְלַמֵּד בַּיְשָׁנִים', 'קַפְדָנִים לֹא צְרִיכִים לְלַמֵּד', 'בַּיְשָׁנִים לֹא יוֹדְעִים כְּלוּם'], minLevel: 8 },
 ];
 
-export function genIdiom(level: number, age: number): MCQ {
-  const L = cappedLevel(level, age);
+export function genIdiom(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
   const eligible = IDIOMS.filter((i) => i.minLevel <= L);
-  if (!eligible.length) return genSynonym(level, age); // fallback for too-young
+  if (!eligible.length) return genSynonym(level, age, bypass); // fallback for too-young
   const q = pick(eligible);
   const options = shuffle([q.meaning, ...q.distractors]);
   return {
-    prompt: `מה משמעות הביטוי "${q.phrase}"?`,
+    prompt: `מָה מַשְׁמָעוּת הַבִּטּוּי "${q.phrase}"?`,
     options,
     correct: options.indexOf(q.meaning),
-    hintContext: `חפש את הפירוש הסביר ביותר`,
+    hintContext: `חַפֵּשׂ אֶת הַפֵּרוּשׁ הַסָּבִיר בְּיוֹתֵר`,
     dir: 'rtl',
   };
 }
@@ -526,17 +527,17 @@ export function genIdiom(level: number, age: number): MCQ {
 // =============================================================
 // MAIN dispatcher
 // =============================================================
-export function generate(gameId: string, level: number, age: number = 6): MCQ {
+export function generate(gameId: string, level: number, age: number = 6, bypass = false): MCQ {
   switch (gameId) {
-    case 'pattern': return genPattern(level, age);
-    case 'odd': return genOdd(level, age);
-    case 'sequence': return genSequence(level, age);
-    case 'analogy': return genAnalogy(level, age);
-    case 'memory': return genMemory(level, age);
-    case 'math': return genMath(level, age);
-    case 'reading': return genReading(level, age);
-    case 'synonym': return genSynonym(level, age);
-    case 'idiom': return genIdiom(level, age);
-    default: return genPattern(level, age);
+    case 'pattern': return genPattern(level, age, bypass);
+    case 'odd': return genOdd(level, age, bypass);
+    case 'sequence': return genSequence(level, age, bypass);
+    case 'analogy': return genAnalogy(level, age, bypass);
+    case 'memory': return genMemory(level, age, bypass);
+    case 'math': return genMath(level, age, bypass);
+    case 'reading': return genReading(level, age, bypass);
+    case 'synonym': return genSynonym(level, age, bypass);
+    case 'idiom': return genIdiom(level, age, bypass);
+    default: return genPattern(level, age, bypass);
   }
 }

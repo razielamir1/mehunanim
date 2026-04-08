@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { GAMES, localizeGame } from '@/games';
 import { askGemini } from '@/lib/gemini';
-import { Sparkles, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Sparkles, RotateCcw, AlertTriangle, Sliders } from 'lucide-react';
 import { useT } from '@/i18n';
 
 export default function Parent() {
@@ -16,6 +16,10 @@ export default function Parent() {
   const name = useStore((s) => s.name);
   const age = useStore((s) => s.age);
   const reset = useStore((s) => s.reset);
+  const profiles = useStore((s) => s.profiles);
+  const activeProfileId = useStore((s) => s.activeProfileId);
+  const updateActive = useStore((s) => s.updateActive);
+  const activeProfile = profiles.find((p) => p.id === activeProfileId);
   const [insight, setInsight] = useState('');
   const [loading, setLoading] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
@@ -83,6 +87,41 @@ export default function Parent() {
         <Sparkles className="w-5 h-5" /> {loading ? t('preparingInsights') : t('aiInsights')}
       </button>
       {insight && <div className="card bg-brand-50 dark:bg-brand-700/20 text-start whitespace-pre-wrap">{insight}</div>}
+
+      {/* Level override slider */}
+      <div className="card space-y-3">
+        <div className="flex items-center gap-2">
+          <Sliders className="w-5 h-5 text-brand-500" />
+          <h2 className="font-black">רמת קושי מותאמת</h2>
+        </div>
+        <p className="text-xs text-slate-500">
+          ברירת מחדל: רמה לפי גיל ({age}). אפשר לפתוח רמות גבוהות יותר באופן ידני אם הילד מוכן —
+          לא מומלץ אם זה גורם תסכול.
+        </p>
+        <div className="flex items-center gap-3">
+          <input
+            type="range"
+            min={1}
+            max={10}
+            step={1}
+            value={activeProfile?.levelOverride ?? 0}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              updateActive({ levelOverride: v === 0 ? null : v });
+            }}
+            className="flex-1"
+          />
+          <div className="font-black text-lg w-12 text-center">
+            {activeProfile?.levelOverride ?? 'אוטו'}
+          </div>
+        </div>
+        <button
+          onClick={() => updateActive({ levelOverride: null })}
+          className="text-xs text-brand-600 underline"
+        >
+          חזור לרמה אוטומטית לפי גיל
+        </button>
+      </div>
 
       <button onClick={() => setShowResetModal(true)} className="btn-ghost w-full text-rose-600">
         <RotateCcw className="w-5 h-5" /> {t('reset')}

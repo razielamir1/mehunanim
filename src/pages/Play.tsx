@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Lightbulb, Sparkles, Flame, BookOpen, ArrowLeftRight, Volume2 } from 'lucide-react';
@@ -12,6 +12,9 @@ import { askGemini } from '@/lib/gemini';
 import { cn } from '@/lib/cn';
 import { useSpeak } from '@/hooks/useSpeak';
 import { useT } from '@/i18n';
+import { hasSeenWalkthrough, markWalkthroughSeen } from '@/store/useStore';
+import Walkthrough from '@/components/Walkthrough';
+import BonusRound from '@/components/BonusRound';
 
 const ROUND = 5;
 
@@ -30,6 +33,10 @@ export default function Play() {
   const ttsOn = useStore((s) => s.ttsOn);
   const age = useStore((s) => s.age);
   const locale = useStore((s) => s.locale);
+  const profiles = useStore((s) => s.profiles);
+  const activeProfileId = useStore((s) => s.activeProfileId);
+  const activeProfile = profiles.find((p) => p.id === activeProfileId);
+  const bypass = activeProfile?.levelOverride != null;
   const addStar = useStore((s) => s.addStar);
   const recordAttempt = useStore((s) => s.recordAttempt);
   const bumpStreak = useStore((s) => s.bumpStreak);
@@ -37,28 +44,34 @@ export default function Play() {
   const rawMeta = GAMES.find((g) => g.id === gameId)!;
   const meta = { ...rawMeta, title: locale === 'en' ? rawMeta.titleEn : rawMeta.title };
   const [level] = useState(() => getCurrentLevel(gameId));
-  const isToddler = age <= 3;
+  // Toddler mode triggered by age UNLESS parent override is set
+  const isToddler = age <= 3 && !bypass;
 
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
-  const [q, setQ] = useState<MCQ>(() => generate(gameId, level, age));
+  const [q, setQ] = useState<MCQ>(() => generate(gameId, level, age, bypass));
   const [picked, setPicked] = useState<number | null>(null);
   const [hint, setHint] = useState('');
   const [explain, setExplain] = useState('');
   const [loading, setLoading] = useState<'hint' | 'explain' | null>(null);
+  // Show walkthrough on first question of a new level
+  const [showWalkthrough, setShowWalkthrough] = useState(() => !hasSeenWalkthrough(gameId, level));
+  // Bonus round phase after main session ends
+  const [showBonus, setShowBonus] = useState(false);
+  const bonusEnabled = useStore((s) => s.bonusEnabled);
+  const finalResultRef = useRef<{ correct: number; total: number; leveledUp?: boolean; newCollectible?: string } | null>(null);
 
   const { speak, stop } = useSpeak();
-  // Auto-TTS for kids ≤5: always on. Otherwise respects user toggle.
-  const autoSpeak = age <= 5 || ttsOn;
+  // Auto-TTS only if user explicitly turned it on. No surprise speech.
   useEffect(() => {
-    if (!autoSpeak || picked !== null) return;
-    const t = setTimeout(() => speak(q.prompt, { force: true, rate: isToddler ? 0.8 : 0.9 }), isToddler ? 500 : 200);
+    if (!ttsOn || picked !== null) return;
+    const t = setTimeout(() => speak(q.prompt, { rate: isToddler ? 0.8 : 0.9 }), isToddler ? 500 : 200);
     return () => { clearTimeout(t); stop(); };
-  }, [q, picked, autoSpeak, isToddler, speak, stop]);
+  }, [q, picked, ttsOn, isToddler, speak, stop]);
 
   const pose = picked === null ? 'idle' : picked === q.correct ? 'celebrate' : 'thinking';
 
-  const next = () => { setPicked(null); setHint(''); setExplain(''); setQ(generate(gameId, level, age)); };
+  const next = () => { setPicked(null); setHint(''); setExplain(''); setQ(generate(gameId, level, age, bypass)); };
 
   const choose = (i: number) => {
     if (picked !== null) return;
@@ -83,6 +96,11 @@ export default function Play() {
         if (result.leveledUp || result.newCollectible) {
           confetti({ particleCount: 200, spread: 160, origin: { y: 0.5 } });
         }
+        finalResultRef.current = { correct: finalCorrect, total: ROUND, leveledUp: result.leveledUp, newCollectible: result.newCollectible };
+        if (bonusEnabled) {
+          setShowBonus(true);
+          return;
+        }
         nav('/results', { state: { correct: finalCorrect, total: ROUND, gameId, ...result, level } });
       } else {
         setIdx((x) => x + 1);
@@ -99,6 +117,42 @@ export default function Play() {
   };
 
   const progressPct = useMemo(() => (idx / ROUND) * 100, [idx]);
+
+  if (showBonus) {
+    return (
+      <BonusRound
+        gameId={gameId}
+        onComplete={(bonusCorrect) => {
+          const r = finalResultRef.current!;
+          nav('/results', {
+            state: {
+              correct: r.correct,
+              total: r.total,
+              gameId,
+              leveledUp: r.leveledUp,
+              newCollectible: r.newCollectible,
+              level,
+              bonusCorrect,
+            },
+          });
+        }}
+      />
+    );
+  }
+
+  if (showWalkthrough) {
+    return (
+      <Walkthrough
+        q={q}
+        gameId={gameId}
+        level={level}
+        onContinue={() => {
+          markWalkthroughSeen(gameId, level);
+          setShowWalkthrough(false);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-5">

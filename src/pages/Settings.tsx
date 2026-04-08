@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
-import { Volume2, VolumeX, Sun, Moon, Mic, Languages, UserCog, Sparkles, Accessibility as A11yIcon, Users, MessageSquare, Cloud, LogOut } from 'lucide-react';
+import { Volume2, VolumeX, Sun, Moon, Mic, Languages, UserCog, Sparkles, Accessibility as A11yIcon, Users, MessageSquare, Cloud, LogOut, GraduationCap } from 'lucide-react';
 import { signOutUser, isFirebaseConfigured } from '@/lib/firebase';
 import { useT } from '@/i18n';
 import { Link } from 'react-router-dom';
@@ -22,6 +22,8 @@ export default function Settings() {
   const setLocale = useStore((s) => s.setLocale);
   const cloudEmail = useStore((s) => s.cloudEmail);
   const setCloudUser = useStore((s) => s.setCloudUser);
+  const bonusEnabled = useStore((s) => s.bonusEnabled);
+  const toggleBonus = useStore((s) => s.toggleBonus);
   const [showFeedback, setShowFeedback] = useState(false);
 
   const onSignOut = async () => {
@@ -52,6 +54,11 @@ export default function Settings() {
       <button onClick={toggleTts} className="btn-ghost w-full justify-between">
         <span className="flex items-center gap-2"><Mic className="w-5 h-5" /> {t('ttsLabel')}</span>
         <span className="text-sm">{ttsOn ? t('ttsOnState') : t('ttsOffState')}</span>
+      </button>
+
+      <button onClick={toggleBonus} className="btn-ghost w-full justify-between">
+        <span className="flex items-center gap-2"><GraduationCap className="w-5 h-5" /> {locale === 'en' ? 'Bonus exam questions' : 'שאלות בונוס מהמבחן'}</span>
+        <span className="text-sm">{bonusEnabled ? (locale === 'en' ? 'On' : 'פועל') : (locale === 'en' ? 'Off' : 'כבוי')}</span>
       </button>
 
       <button

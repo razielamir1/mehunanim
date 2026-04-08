@@ -53,6 +53,10 @@ export type Profile = {
   streak: number;
   chatHistory: ChatMsg[];
   tutorialSeen?: boolean;
+  // Override the auto-computed difficulty cap from age. null = use age default.
+  levelOverride?: number | null;
+  // Per-game level for which walkthrough has been shown
+  walkthroughSeen?: Record<string, number[]>;
 };
 
 const newId = () => Math.random().toString(36).slice(2, 10);
@@ -72,6 +76,8 @@ const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   streak: 0,
   chatHistory: [],
   tutorialSeen: false,
+  levelOverride: null,
+  walkthroughSeen: {},
   ...overrides,
 });
 
@@ -105,6 +111,8 @@ type State = {
   cloudUid: string | null;
   cloudEmail: string | null;
   lastSyncAt: number;
+  bonusEnabled: boolean;
+  toggleBonus: () => void;
   setCloudUser: (uid: string | null, email: string | null) => void;
   applyCloudData: (profiles: Profile[], activeProfileId: string, syncedAt: number) => void;
 
@@ -182,7 +190,9 @@ export const useStore = create<State>()(
       cloudUid: null,
       cloudEmail: null,
       lastSyncAt: 0,
+      bonusEnabled: true,
 
+      toggleBonus: () => set((s) => ({ bonusEnabled: !s.bonusEnabled })),
       setCloudUser: (cloudUid, cloudEmail) => set({ cloudUid, cloudEmail }),
       applyCloudData: (profiles, activeProfileId, syncedAt) => {
         if (!profiles || profiles.length === 0) return;
@@ -317,7 +327,39 @@ export const useStore = create<State>()(
 
 export const getCurrentLevel = (gameId: string): number => {
   const s = useStore.getState();
-  return s.levels[gameId] ?? startLevel(s.age);
+  // Per-game stored level wins; otherwise use override or age-default
+  const stored = s.levels[gameId];
+  if (stored != null) return stored;
+  const active = s.profiles.find((p) => p.id === s.activeProfileId);
+  if (active?.levelOverride != null) return active.levelOverride;
+  return startLevel(s.age);
+};
+
+// Average level across all games (used for unlocking gating)
+export const getGlobalLevel = (): number => {
+  const s = useStore.getState();
+  const active = s.profiles.find((p) => p.id === s.activeProfileId);
+  if (active?.levelOverride != null) return active.levelOverride;
+  const lvls = Object.values(s.levels);
+  if (lvls.length === 0) return startLevel(s.age);
+  return Math.round(lvls.reduce((a, b) => a + b, 0) / lvls.length);
+};
+
+export const markWalkthroughSeen = (gameId: string, level: number) => {
+  const s = useStore.getState();
+  const active = s.profiles.find((p) => p.id === s.activeProfileId);
+  if (!active) return;
+  const seen = { ...(active.walkthroughSeen ?? {}) };
+  const list = new Set(seen[gameId] ?? []);
+  list.add(level);
+  seen[gameId] = Array.from(list);
+  s.updateActive({ walkthroughSeen: seen });
+};
+
+export const hasSeenWalkthrough = (gameId: string, level: number): boolean => {
+  const s = useStore.getState();
+  const active = s.profiles.find((p) => p.id === s.activeProfileId);
+  return !!(active?.walkthroughSeen?.[gameId]?.includes(level));
 };
 
 export { startLevel };

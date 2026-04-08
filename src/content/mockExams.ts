@@ -37,7 +37,7 @@ const EXAM_1_QUESTIONS: ExamQ[] = [
   {
     id: 'e1-v1',
     category: 'verbal',
-    prompt: 'איזה מהבאים שייך לקבוצה: יתוש, חרגול, נמלה?',
+    prompt: 'אֵיזֶה מֵהַבָּאִים שַׁיָּךְ לַקְּבוּצָה: יַתּוּשׁ, חַרְגּוֹל, נְמָלָה?',
     promptEn: 'Which of the following belongs to the group: mosquito, cricket, ant?',
     options: ['סוס ים', 'פרת ים', 'פרת משה רבנו', 'דולפין'],
     optionsEn: ['Seahorse', 'Manatee', 'Ladybug', 'Dolphin'],
