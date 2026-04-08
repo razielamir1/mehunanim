@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply font-sans text-slate-800 antialiased dark:text-slate-100;
+    background: radial-gradient(circle at top, #ede9fe 0%, #fdf4ff 50%, #fff 100%);
+    font-size: 18px;
+    overscroll-behavior: none;
+  }
+  html.dark body {
+    background: radial-gradient(circle at top, #1e1b4b 0%, #0f172a 60%, #020617 100%);
+  }
+  button { touch-action: manipulation; }
+  h1, h2, h3 { @apply font-display; }
+  input, textarea {
+    @apply dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full font-bold
+           px-6 py-4 min-h-[64px] text-lg transition active:scale-95
+           focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/40;
+  }
+  .btn-primary {
+    @apply btn text-white shadow-lg shadow-brand-500/30
+           bg-gradient-to-l from-indigo-500 via-purple-500 to-pink-500;
+  }
+  .btn-ghost {
+    @apply btn bg-white/80 text-slate-800 border-2 border-slate-200
+           dark:bg-slate-800/80 dark:text-slate-100 dark:border-slate-700;
+  }
+  .card {
+    @apply rounded-3xl bg-white/80 backdrop-blur border border-white shadow-xl shadow-purple-500/10 p-6
+           dark:bg-slate-900/80 dark:border-slate-800 dark:shadow-black/40;
+  }
+}

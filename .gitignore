@@ -1,0 +1,22 @@
+node_modules
+dist
+dist-ssr
+.DS_Store
+*.local
+
+# env — never commit
+.env
+.env.*
+!.env.example
+
+# editors / tools
+.vscode
+.idea
+.vercel
+
+# examples (private PDFs — keep out of repo)
+examples/
+
+# claude / orca — local only
+orca/
+.claude/
