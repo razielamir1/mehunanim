@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Lightbulb, Sparkles, Flame, BookOpen, ArrowLeftRight } from 'lucide-react';
+import { ArrowRight, Lightbulb, Sparkles, Flame, BookOpen, ArrowLeftRight, Volume2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Mascot from '@/components/WorldMascot';
 import { GAMES } from '@/games';
@@ -10,6 +10,7 @@ import { useStore, getCurrentLevel } from '@/store/useStore';
 import { sfx, haptic } from '@/lib/sound';
 import { askGemini } from '@/lib/gemini';
 import { cn } from '@/lib/cn';
+import { useSpeak } from '@/hooks/useSpeak';
 
 const ROUND = 5;
 
@@ -25,39 +26,35 @@ export default function Play() {
   const { gameId = 'pattern' } = useParams();
   const nav = useNavigate();
   const ttsOn = useStore((s) => s.ttsOn);
+  const age = useStore((s) => s.age);
   const addStar = useStore((s) => s.addStar);
   const recordAttempt = useStore((s) => s.recordAttempt);
   const bumpStreak = useStore((s) => s.bumpStreak);
   const streak = useStore((s) => s.streak);
   const meta = GAMES.find((g) => g.id === gameId)!;
   const [level] = useState(() => getCurrentLevel(gameId));
+  const isToddler = age <= 3;
 
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
-  const [q, setQ] = useState<MCQ>(() => generate(gameId, level));
+  const [q, setQ] = useState<MCQ>(() => generate(gameId, level, age));
   const [picked, setPicked] = useState<number | null>(null);
   const [hint, setHint] = useState('');
   const [explain, setExplain] = useState('');
   const [loading, setLoading] = useState<'hint' | 'explain' | null>(null);
 
-  // TTS read aloud for young kids
+  const { speak, stop } = useSpeak();
+  // Auto-TTS for kids ≤5: always on. Otherwise respects user toggle.
+  const autoSpeak = age <= 5 || ttsOn;
   useEffect(() => {
-    if (!ttsOn || picked !== null) return;
-    try {
-      const u = new SpeechSynthesisUtterance(q.prompt.replace(/[\n•❓]/g, ' '));
-      u.lang = 'he-IL';
-      u.rate = 0.9;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(u);
-    } catch {}
-    return () => {
-      try { window.speechSynthesis.cancel(); } catch {}
-    };
-  }, [q, picked, ttsOn]);
+    if (!autoSpeak || picked !== null) return;
+    const t = setTimeout(() => speak(q.prompt, { force: true, rate: isToddler ? 0.8 : 0.9 }), isToddler ? 500 : 200);
+    return () => { clearTimeout(t); stop(); };
+  }, [q, picked, autoSpeak, isToddler, speak, stop]);
 
   const pose = picked === null ? 'idle' : picked === q.correct ? 'celebrate' : 'thinking';
 
-  const next = () => { setPicked(null); setHint(''); setExplain(''); setQ(generate(gameId, level)); };
+  const next = () => { setPicked(null); setHint(''); setExplain(''); setQ(generate(gameId, level, age)); };
 
   const choose = (i: number) => {
     if (picked !== null) return;
@@ -146,15 +143,32 @@ export default function Play() {
               </>
             )}
           </div>
-          <div
-            dir={q.dir}
-            className="text-2xl sm:text-3xl font-black my-4 leading-relaxed whitespace-pre-line break-words"
-            style={{ unicodeBidi: 'plaintext' }}
-          >
-            {q.prompt}
+          <div className="flex items-start justify-center gap-2">
+            <div
+              dir={q.dir}
+              className={cn(
+                'font-black my-4 leading-relaxed whitespace-pre-line break-words flex-1',
+                isToddler ? 'text-4xl sm:text-5xl md:text-6xl' : 'text-2xl sm:text-3xl'
+              )}
+              style={{ unicodeBidi: 'plaintext' }}
+            >
+              {q.prompt}
+            </div>
+            <button
+              onClick={() => speak(q.prompt, { force: true })}
+              aria-label="הקרא בקול"
+              className="mt-3 p-3 rounded-full bg-brand-50 dark:bg-brand-700/30 text-brand-700 dark:text-brand-100 hover:scale-110 active:scale-95 transition min-w-[56px] min-h-[56px] flex items-center justify-center"
+            >
+              <Volume2 className={isToddler ? 'w-8 h-8' : 'w-6 h-6'} />
+            </button>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className={cn('gap-3', isToddler ? 'grid grid-cols-2' : 'grid grid-cols-2')}>
             {q.options.map((opt, i) => {
+              // Toddler mode: hide all but the correct + first wrong option
+              if (isToddler) {
+                const firstWrong = q.options.findIndex((_, j) => j !== q.correct);
+                if (i !== q.correct && i !== firstWrong) return null;
+              }
               const isRight = picked !== null && i === q.correct;
               const isWrong = picked === i && i !== q.correct;
               return (
@@ -162,7 +176,8 @@ export default function Play() {
                   key={i}
                   onClick={() => choose(i)}
                   className={cn(
-                    'min-h-[80px] rounded-2xl text-2xl font-black border-2 transition px-3',
+                    'rounded-2xl font-black border-2 transition px-3',
+                    isToddler ? 'min-h-[140px] text-5xl' : 'min-h-[80px] text-2xl',
                     picked === null && 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 active:scale-95 hover:border-brand-500',
                     isRight && 'bg-emerald-400 border-emerald-500 text-white animate-pop',
                     isWrong && 'bg-rose-300 border-rose-400 text-white animate-shake',

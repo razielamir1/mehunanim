@@ -48,7 +48,7 @@ export default function Landing() {
               <button
                 key={a}
                 onClick={() => { sfx.tap(); setAvatar(a); }}
-                className={`min-h-[60px] rounded-2xl text-3xl transition ${
+                className={`min-h-[64px] rounded-2xl text-3xl transition ${
                   avatar === a ? 'bg-gradient-to-l from-indigo-500 to-pink-500 scale-110 shadow-lg' : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700'
                 }`}
               >{a}</button>
@@ -74,7 +74,7 @@ export default function Landing() {
               <button
                 key={a}
                 onClick={() => { sfx.tap(); setAge(a as Age); }}
-                className={`min-h-[56px] rounded-xl font-black text-xl transition ${
+                className={`min-h-[64px] rounded-xl font-black text-xl transition ${
                   age === a ? 'bg-gradient-to-l from-indigo-500 to-pink-500 text-white shadow-lg scale-105' : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700'
                 }`}
               >{a}</button>

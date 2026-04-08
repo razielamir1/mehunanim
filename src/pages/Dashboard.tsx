@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star, Award } from 'lucide-react';
+import { Star, Award, GraduationCap } from 'lucide-react';
 import Mascot from '@/components/WorldMascot';
 import { useStore, getCurrentLevel } from '@/store/useStore';
-import { GAMES } from '@/games';
+import { gamesForAge } from '@/games';
 import { useT } from '@/i18n';
 
 export default function Dashboard() {
@@ -12,19 +12,21 @@ export default function Dashboard() {
   const avatar = useStore((s) => s.avatar);
   const stars = useStore((s) => s.stars);
   const levels = useStore((s) => s.levels);
+  const age = useStore((s) => s.age);
+  const games = gamesForAge(age);
   const totalLvls = Object.values(levels);
   const avgLevel = totalLvls.length ? (totalLvls.reduce((a, b) => a + b, 0) / totalLvls.length).toFixed(1) : '1';
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <Link to="/profiles" className="flex items-center gap-3 active:scale-95 transition" aria-label="החלף פרופיל">
           <div className="text-4xl">{avatar}</div>
           <div>
             <div className="text-sm text-slate-500 dark:text-slate-400">{t('hello')},</div>
             <h1 className="text-3xl font-black">{name} 👋</h1>
           </div>
-        </div>
+        </Link>
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-full px-3 py-1.5 shadow">
             <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
@@ -45,8 +47,24 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        {GAMES.map((g, i) => {
+      {age >= 7 && (
+        <Link
+          to="/mock-exam"
+          className="block card bg-gradient-to-l from-amber-400 to-orange-500 text-white border-0 active:scale-95 transition"
+        >
+          <div className="flex items-center gap-3">
+            <GraduationCap className="w-12 h-12" />
+            <div className="flex-1">
+              <div className="font-black text-xl">מבחן סימולציה</div>
+              <div className="text-sm opacity-90">10 שאלות כמו במבחן האמיתי 🎓</div>
+            </div>
+            <span className="text-2xl">›</span>
+          </div>
+        </Link>
+      )}
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {games.map((g, i) => {
           const lvl = getCurrentLevel(g.id);
           return (
             <motion.div key={g.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>

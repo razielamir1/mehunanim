@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { GAMES } from '@/games';
 import { askGemini } from '@/lib/gemini';
-import { Sparkles, RotateCcw } from 'lucide-react';
+import { Sparkles, RotateCcw, AlertTriangle } from 'lucide-react';
 
 export default function Parent() {
   const [unlocked, setUnlocked] = useState(false);
@@ -14,6 +15,7 @@ export default function Parent() {
   const reset = useStore((s) => s.reset);
   const [insight, setInsight] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
 
   if (!unlocked) {
     return (
@@ -30,16 +32,20 @@ export default function Parent() {
     );
   }
 
-  const stats: any = {};
-  GAMES.forEach((g) => {
-    const list = attempts[g.id] ?? [];
-    stats[g.id] = {
-      title: g.title,
-      attempts: list.length,
-      level: levels[g.id] ?? null,
-      avgPct: list.length ? Math.round((list.reduce((s, a) => s + a.correct / a.total, 0) / list.length) * 100) : 0,
-    };
-  });
+  type GameStat = { title: string; attempts: number; level: number | null; avgPct: number };
+  const stats = useMemo(() => {
+    const out: Record<string, GameStat> = {};
+    GAMES.forEach((g) => {
+      const list = attempts[g.id] ?? [];
+      out[g.id] = {
+        title: g.title,
+        attempts: list.length,
+        level: levels[g.id] ?? null,
+        avgPct: list.length ? Math.round((list.reduce((s, a) => s + a.correct / a.total, 0) / list.length) * 100) : 0,
+      };
+    });
+    return out;
+  }, [attempts, levels]);
 
   const getInsight = async () => {
     setLoading(true);
@@ -76,9 +82,23 @@ export default function Parent() {
       </button>
       {insight && <div className="card bg-brand-50 dark:bg-brand-700/20 text-start whitespace-pre-wrap">{insight}</div>}
 
-      <button onClick={() => { if (confirm('לאפס את כל ההתקדמות?')) reset(); }} className="btn-ghost w-full text-rose-600">
+      <button onClick={() => setShowResetModal(true)} className="btn-ghost w-full text-rose-600">
         <RotateCcw className="w-5 h-5" /> אפס התקדמות
       </button>
+
+      {showResetModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="card max-w-sm w-full text-center">
+            <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-3" />
+            <h3 className="text-xl font-black mb-2">לאפס את כל ההתקדמות?</h3>
+            <p className="text-slate-600 dark:text-slate-400 mb-4">כל הכוכבים, הרמות, וההישגים יימחקו ללא יכולת שחזור.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowResetModal(false)} className="btn-ghost flex-1">ביטול</button>
+              <button onClick={() => { reset(); setShowResetModal(false); }} className="btn flex-1 bg-rose-500 text-white">אפס</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

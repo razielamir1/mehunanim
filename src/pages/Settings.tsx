@@ -1,5 +1,5 @@
 import { useStore } from '@/store/useStore';
-import { Volume2, VolumeX, Sun, Moon, Mic, Languages, UserCog, Sparkles, Accessibility as A11yIcon } from 'lucide-react';
+import { Volume2, VolumeX, Sun, Moon, Mic, Languages, UserCog, Sparkles, Accessibility as A11yIcon, Users } from 'lucide-react';
 import { useT } from '@/i18n';
 import { Link } from 'react-router-dom';
 
@@ -58,6 +58,11 @@ export default function Settings() {
         <span className="flex items-center gap-2"><Languages className="w-5 h-5" /> {t('language')}</span>
         <span className="text-sm">{locale === 'he' ? 'עברית' : 'English'}</span>
       </button>
+
+      <Link to="/profiles" className="btn-ghost w-full justify-between">
+        <span className="flex items-center gap-2"><Users className="w-5 h-5" /> הילדים שלי</span>
+        <span>›</span>
+      </Link>
 
       <Link to="/worlds" className="btn-ghost w-full justify-between">
         <span className="flex items-center gap-2"><Sparkles className="w-5 h-5" /> בחר עולם</span>

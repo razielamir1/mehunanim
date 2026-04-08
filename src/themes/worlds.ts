@@ -143,7 +143,7 @@ export const WORLDS: World[] = [
     name: 'לגו',
     nameEn: 'Lego',
     emoji: '🧱',
-    mascot: '🧑‍🚒',
+    mascot: '👷',
     mascotName: 'בנאי לגו',
     mascotNameEn: 'Lego Builder',
     bgGradient: 'from-yellow-100 via-red-50 to-blue-100',

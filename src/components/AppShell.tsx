@@ -13,7 +13,14 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-full flex flex-col">
       <a href="#main-content" className="skip-link">דלג לתוכן הראשי</a>
       <WorldBackground />
-      <main id="main-content" className="flex-1 max-w-3xl w-full mx-auto px-4 pt-6 pb-28">{children}</main>
+      <main
+        id="main-content"
+        className={clsx(
+          'flex-1 w-full mx-auto px-4 pt-6',
+          'max-w-3xl md:max-w-5xl lg:max-w-6xl',
+          showNav ? 'pb-28 md:pb-32' : 'pb-6'
+        )}
+      >{children}</main>
       {showNav && (
         <nav className="fixed bottom-0 inset-x-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-t border-slate-200 dark:border-slate-800">
           <div className="max-w-3xl mx-auto grid grid-cols-4 gap-1 p-2">
