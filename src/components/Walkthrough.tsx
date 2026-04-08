@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 import { MCQ } from '@/games/generators';
 import { useStore } from '@/store/useStore';
+import { useGT } from '@/i18n/gender';
 
 const TXT: Record<'he' | 'en', Record<string, string>> = {
   he: {
@@ -66,7 +67,8 @@ export default function Walkthrough({
   onContinue: () => void;
 }) {
   const locale = useStore((s) => s.locale);
-  const tt = (k: string) => TXT[locale][k] || k;
+  const gt = useGT();
+  const tt = (k: string) => k === 'cta' ? gt('walkthroughCta') : (TXT[locale][k] || k);
   const why = locale === 'en' ? whyWrongEn : whyWrongHe;
   const isHe = locale === 'he';
 

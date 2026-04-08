@@ -24,21 +24,8 @@ export default function Parent() {
   const [loading, setLoading] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
 
-  if (!unlocked) {
-    return (
-      <div className="card max-w-sm mx-auto mt-10 text-center space-y-4">
-        <h2 className="text-2xl font-black">{t('parentTitle')}</h2>
-        <p className="text-slate-600 dark:text-slate-300">{t('parentQuiz')}</p>
-        <input
-          type="number" inputMode="numeric"
-          value={ans} onChange={(e) => setAns(e.target.value)}
-          className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 px-4 py-4 text-center text-xl"
-        />
-        <button onClick={() => ans === '56' && setUnlocked(true)} className="btn-primary w-full">{t('enter')}</button>
-      </div>
-    );
-  }
-
+  // CRITICAL: useMemo MUST be called before any early return.
+  // React hooks must run in the same order every render.
   type GameStat = { id: string; title: string; emoji: string; gradient: string; attempts: number; level: number | null; avgPct: number };
   const stats = useMemo<GameStat[]>(() => {
     return GAMES.map((g) => {
@@ -55,6 +42,30 @@ export default function Parent() {
       };
     });
   }, [attempts, levels, locale]);
+
+  if (!unlocked) {
+    return (
+      <div className="card max-w-sm mx-auto mt-10 text-center space-y-4">
+        <h2 className="text-2xl font-black">{t('parentTitle')}</h2>
+        <p className="text-slate-600 dark:text-slate-300">{t('parentQuiz')}</p>
+        <input
+          type="number" inputMode="numeric"
+          value={ans} onChange={(e) => setAns(e.target.value)}
+          className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 px-4 py-4 text-center text-xl"
+        />
+        <button onClick={() => ans === '56' && setUnlocked(true)} className="btn-primary w-full">{t('enter')}</button>
+      </div>
+    );
+  }
+
+  // Defensive: if active profile somehow missing, show fallback
+  if (!activeProfile) {
+    return (
+      <div className="card max-w-sm mx-auto mt-10 text-center">
+        <p>טוען...</p>
+      </div>
+    );
+  }
 
   const getInsight = async () => {
     setLoading(true);

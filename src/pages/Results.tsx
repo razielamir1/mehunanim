@@ -5,9 +5,11 @@ import { Star, TrendingUp } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Mascot from '@/components/WorldMascot';
 import { useT } from '@/i18n';
+import { useGT } from '@/i18n/gender';
 
 export default function Results() {
   const t = useT();
+  const gt = useGT();
   const { state } = useLocation() as {
     state?: { correct: number; total: number; gameId: string; leveledUp?: boolean; newCollectible?: string; level?: number };
   };
@@ -27,7 +29,7 @@ export default function Results() {
       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}>
         <Mascot pose={pose as any} size={150} />
       </motion.div>
-      <h1 className="text-4xl font-black">{pct >= 80 ? t('amazing') : pct >= 50 ? t('great') : t('tryAgain')}</h1>
+      <h1 className="text-4xl font-black">{pct >= 80 ? gt('amazing') : pct >= 50 ? gt('great') : gt('tryAgain')}</h1>
 
       {state?.leveledUp && (
         <motion.div

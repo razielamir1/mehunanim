@@ -118,6 +118,17 @@ export default function Play() {
 
   const progressPct = useMemo(() => (idx / ROUND) * 100, [idx]);
 
+  // Auto-detect actual reading direction from the prompt content.
+  // If the prompt contains Hebrew letters → RTL. If only numbers/symbols → LTR.
+  const effectiveDir = useMemo<'rtl' | 'ltr'>(() => {
+    const hasHebrew = /[\u0590-\u05FF]/.test(q.prompt);
+    if (hasHebrew) return 'rtl';
+    const onlyNumeric = /^[\d\s+\-×÷=?,.()]*$/.test(q.prompt.trim());
+    if (onlyNumeric) return 'ltr';
+    // Visual emojis only — use the generator's hint
+    return q.dir;
+  }, [q.prompt, q.dir]);
+
   if (showBonus) {
     return (
       <BonusRound
@@ -187,14 +198,14 @@ export default function Play() {
         >
           <div
             className="inline-flex items-center gap-2 bg-brand-50 dark:bg-brand-700/30 text-brand-700 dark:text-brand-100 px-4 py-1.5 rounded-full text-sm font-bold mb-2"
-            aria-label={q.dir === 'rtl' ? t('rtlAria') : t('ltrAria')}
+            aria-label={effectiveDir === 'rtl' ? t('rtlAria') : t('ltrAria')}
           >
             <ArrowLeftRight className="w-4 h-4" />
-            {q.dir === 'rtl' ? t('readDirRtl') : t('readDirLtr')}
+            {effectiveDir === 'rtl' ? t('readDirRtl') : t('readDirLtr')}
           </div>
           <div className="flex items-start justify-center gap-2">
             <div
-              dir={q.dir}
+              dir={effectiveDir}
               className={cn(
                 'font-black my-4 leading-relaxed whitespace-pre-line break-words flex-1',
                 isToddler ? 'text-4xl sm:text-5xl md:text-6xl' : 'text-2xl sm:text-3xl'

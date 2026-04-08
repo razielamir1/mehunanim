@@ -6,12 +6,15 @@ export type Mode = 'hint' | 'explain' | 'insight' | 'analyze' | 'chat';
 export async function askGemini(mode: Mode, payload: unknown): Promise<string> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 20000);
-  const locale = useStore.getState().locale;
+  const state = useStore.getState();
+  const locale = state.locale;
+  const active = state.profiles.find((p) => p.id === state.activeProfileId);
+  const gender = active?.gender ?? 'neutral';
   try {
     const r = await fetch('/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode, payload, locale }),
+      body: JSON.stringify({ mode, payload, locale, gender }),
       signal: ctrl.signal,
     });
     if (!r.ok) throw new Error(String(r.status));

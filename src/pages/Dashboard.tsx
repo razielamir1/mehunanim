@@ -7,9 +7,11 @@ import Tutorial from '@/components/Tutorial';
 import { useStore, getCurrentLevel } from '@/store/useStore';
 import { gamesWithLockState, localizeGame } from '@/games';
 import { useT } from '@/i18n';
+import { useGT } from '@/i18n/gender';
 
 export default function Dashboard() {
   const t = useT();
+  const gt = useGT();
   const locale = useStore((s) => s.locale);
   const name = useStore((s) => s.name);
   const avatar = useStore((s) => s.avatar);
@@ -64,7 +66,7 @@ export default function Dashboard() {
       <div className="flex items-center gap-4 card">
         <Mascot pose="happy" size={70} />
         <div>
-          <div className="font-bold">{t('pickGame')}</div>
+          <div className="font-bold">{gt('pickGame')}</div>
           <div className="text-sm text-slate-500 dark:text-slate-400">{t('pickSub')}</div>
         </div>
       </div>

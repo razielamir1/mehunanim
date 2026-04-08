@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export type Age = 2 | 3 | 4 | 5 | 6 | 7 | 8;
+export type Gender = 'male' | 'female' | 'neutral';
 export type Locale = 'he' | 'en';
 export type Theme = 'light' | 'dark';
 export type FontSize = 'normal' | 'large' | 'xlarge';
@@ -42,6 +43,7 @@ export type Profile = {
   id: string;
   name: string;
   age: Age;
+  gender: Gender;
   city: string;
   avatar: string;
   worldId: string;
@@ -65,6 +67,7 @@ const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   id: newId(),
   name: '',
   age: 6,
+  gender: 'neutral',
   city: '',
   avatar: '🦊',
   worldId: 'owl',
@@ -123,7 +126,7 @@ type State = {
   updateActive: (patch: Partial<Profile>) => void;
 
   // Existing API (operates on active profile)
-  setProfile: (p: Partial<Pick<Profile, 'name' | 'age' | 'city' | 'avatar'>>) => void;
+  setProfile: (p: Partial<Pick<Profile, 'name' | 'age' | 'gender' | 'city' | 'avatar'>>) => void;
   setLocale: (l: Locale) => void;
   setTheme: (t: Theme) => void;
   setWorld: (id: string) => void;

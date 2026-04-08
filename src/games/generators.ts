@@ -172,6 +172,12 @@ const ANALOGIES: Analogy[] = [
   { a: 'גּוֹזָל', b: 'צִפּוֹר', c: 'גּוּר', d: 'כֶּלֶב', distractors: ['חָתוּל', 'אַרְיֵה', 'דֹּב'], minLevel: 5 },
   { a: 'נַגָּר', b: 'עֵץ', c: 'צוֹרֵף', d: 'זָהָב', distractors: ['נְיָר', 'בַּד', 'אֶבֶן'], minLevel: 7 },
   { a: 'טוּנָה', b: 'דָּג', c: 'נַרְקִיס', d: 'פֶּרַח', distractors: ['חַיָּה', 'יְסוֹד', 'אֶבֶן'], minLevel: 7 },
+  // From "גאוני" PDF — analogies (יחסי מילים)
+  { a: 'דְּבוֹרָה', b: 'כַּוֶּרֶת', c: 'חֲזִיר', d: 'דִּיר', distractors: ['דְּבַשׁ', 'נְמָלָה', 'יָפֶה'], minLevel: 5 },
+  { a: 'שׁוֹקֵעַ', b: 'צָף', c: 'לוֹחֵשׁ', d: 'צוֹעֵק', distractors: ['בָּהִיר', 'שַׁחַק', 'תַּחְתִּית'], minLevel: 6 },
+  { a: 'עָמִית', b: 'רֵעַ', c: 'מַתָּנָה', d: 'דּוֹרוֹן', distractors: ['מִלָּה', 'אִישׁ', 'שָׁחֹר'], minLevel: 6 },
+  { a: 'יוֹנָה', b: 'הוֹמָה', c: 'זְאֵב', d: 'מְיַלֵּל', distractors: ['זְבוּב', 'חֲמוֹר', 'גָּמָל'], minLevel: 6 },
+  { a: 'חֻלְצָה', b: 'בַּד', c: 'מַרְאָה', d: 'זְכוּכִית', distractors: ['מַדָּף', 'טוּשׁ', 'עִפָּרוֹן'], minLevel: 6 },
 ];
 
 export function genAnalogy(level: number, age: number, bypass = false): MCQ {
@@ -410,9 +416,102 @@ function genWordProblem(L: number): MCQ {
     },
   ];
 
-  if (L <= 5) return pick(easy)();
-  if (L <= 6) return pick(medium)();
-  return pick(hard)();
+  // Additional templates inspired by real exam content
+  const extra: Array<() => MCQ> = [
+    // Time / duration ending — like "lesson started 16:50, lasted 45 min"
+    () => {
+      const startH = rand(2, 5);
+      const startM = pick([0, 15, 30, 45]);
+      const dur = pick([30, 45, 60, 75, 90]);
+      const totalM = startH * 60 + startM + dur;
+      const endH = Math.floor(totalM / 60) % 12 || 12;
+      const endM = totalM % 60;
+      const fmt = (h: number, m: number) => `${h}:${m.toString().padStart(2, '0')}`;
+      const ans = fmt(endH, endM);
+      const distractors = [
+        fmt(endH, (endM + 5) % 60),
+        fmt(endH - 1, endM),
+        fmt(endH, Math.max(0, endM - 10)),
+      ];
+      const { options, correctIdx } = buildOptions(ans, distractors, () => fmt(endH + rand(0, 1), rand(0, 59)));
+      return {
+        prompt: `שִׁעוּר הִתְחִיל בְּשָׁעָה ${fmt(startH, startM)} וְנִמְשַׁךְ ${dur} דַּקּוֹת. בְּאֵיזוֹ שָׁעָה הִסְתַּיֵּם הַשִּׁעוּר?`,
+        options, correct: correctIdx,
+        hintContext: `הוֹסֵף אֶת מִשְׁךְ הַשִּׁעוּר לִשְׁעַת הַהַתְחָלָה`, dir: 'rtl',
+      };
+    },
+    // "Twice as many" — doubling pattern
+    () => {
+      const day1 = rand(2, 8);
+      const day2 = day1 * 2;
+      const total = day1 + day2;
+      const { options, correctIdx } = buildOptions(
+        String(total),
+        [String(day1 * 2), String(day1 + 1), String(day2 + 1), String(day1 * 3)].filter((v) => v !== String(total)),
+        () => String(total + rand(1, 5))
+      );
+      const name = pick(['הַרְאֵל', 'דָּנָה', 'יוֹאָב', 'מַאיָה']);
+      return {
+        prompt: `${name} הָלַךְ לְחוּג כַּדּוּרְסַל בְּיוֹם שְׁלִישִׁי וּבְיוֹם חֲמִישִׁי. בְּיוֹם שְׁלִישִׁי קָלַע ${day1} סַלִּים, וּבְיוֹם חֲמִישִׁי קָלַע פִּי שְׁנַיִם יוֹתֵר סַלִּים מֵאֲשֶׁר בְּיוֹם שְׁלִישִׁי. כַּמָּה סַלִּים קָלַע בְּסַךְ הַכֹּל הַשָּׁבוּעַ?`,
+        options, correct: correctIdx,
+        hintContext: `פִּי שְׁנַיִם = כְּפוֹל שְׁתַּיִם`, dir: 'rtl',
+      };
+    },
+    // "One less" / "more than"
+    () => {
+      const a = rand(3, 8);
+      const b = rand(1, 5);
+      const c = a - 1;
+      const ans = a + b + c;
+      const { options, correctIdx } = buildOptions(
+        String(ans),
+        [String(ans - 1), String(ans + 1), String(a + b), String(ans - 2)].filter((v) => v !== String(ans) && Number(v) > 0),
+        () => String(ans + rand(1, 5))
+      );
+      return {
+        prompt: `אִמָּא הֵכִינָה פִּיצָה. עִדּוֹ אָכַל ${a} מְשֻׁלָּשִׁים, יוֹנָתָן אָכַל ${b} מְשֻׁלָּשִׁים, וְנֹעַם אָכַל מְשֻׁלָּשׁ אֶחָד פָּחוֹת מֵעִדּוֹ. כַּמָּה מְשֻׁלְּשֵׁי פִּיצָה אָכְלוּ הַחֲבֵרִים יַחְדָּיו?`,
+        options, correct: correctIdx,
+        hintContext: `קֹדֶם חַשֵּׁב כַּמָּה אָכַל נֹעַם, וְאָז חַבֵּר הַכֹּל`, dir: 'rtl',
+      };
+    },
+    // Hourly wage
+    () => {
+      const rate = pick([5, 6, 7, 8, 10]);
+      const hours = rand(2, 9);
+      const ans = rate * hours;
+      const { options, correctIdx } = buildOptions(
+        String(ans),
+        [String(rate + hours), String(ans + rate), String(ans - rate), String(rate * (hours + 1))].filter((v) => v !== String(ans)),
+        () => String(ans + rand(1, 10))
+      );
+      return {
+        prompt: `מִיכָאֵלָה עוֹבֶדֶת כְּמֶלְצָרִית בְּבֵית קָפֶה, וּמַרְוִיחָה ${rate} שְׁקָלִים לִשְׁעַת עֲבוֹדָה. מָה יִהְיֶה שְׂכָרָהּ לְאַחַר ${hours} שְׁעוֹת עֲבוֹדָה?`,
+        options, correct: correctIdx,
+        hintContext: `כְּפוֹל שְׂכָר שָׁעָה בְּמִסְפַּר הַשָּׁעוֹת`, dir: 'rtl',
+      };
+    },
+    // Change from a bill
+    () => {
+      const bill = pick([10, 20, 50]);
+      const change = rand(1, bill - 2);
+      const price = bill - change;
+      const { options, correctIdx } = buildOptions(
+        String(price),
+        [String(change), String(bill), String(price + 1), String(price - 1)].filter((v) => v !== String(price) && Number(v) > 0),
+        () => String(price + rand(1, 5))
+      );
+      return {
+        prompt: `יָעֵל קָנְתָה אַרְטִיק בַּמַּכֹּלֶת. הִיא נָתְנָה לַמּוֹכֵר שְׁטָר שֶׁל ${bill} שְׁקָלִים, וְקִבְּלָה עֹדֶף שֶׁל ${change} שְׁקָלִים. מָה הָיָה מְחִירוֹ שֶׁל הָאַרְטִיק?`,
+        options, correct: correctIdx,
+        hintContext: `מָה שֶׁשִּׁלַּמְתִּי פָּחוֹת הָעֹדֶף שֶׁקִּבַּלְתִּי`, dir: 'rtl',
+      };
+    },
+  ];
+
+  if (L <= 4) return pick(easy)();
+  if (L === 5) return pick([...easy, ...extra])();
+  if (L === 6) return pick([...medium, ...extra])();
+  return pick([...hard, ...extra])();
 }
 
 // =============================================================
@@ -451,6 +550,23 @@ const PASSAGES: Passage[] = [
     correct: 2,
     hint: 'בָּא בִּתְחִלַּת הַפִּסְקָה',
     minLevel: 6,
+  },
+  // Inspired by official 2025 Ministry passage about carnivorous plants
+  {
+    text: 'יֵשׁ צְמָחִים שֶׁאוֹכְלִים חֲרָקִים. אֶחָד מֵהֶם הוּא הַטְּלָלִית. עַל הֶעָלִים שֶׁלָּהּ יֵשׁ טִיפּוֹת דְּבִיקוֹת שֶׁמַּבְרִיקוֹת בַּשֶּׁמֶשׁ. כְּשֶׁחֲרָק נוֹחֵת עַל הֶעָלֶה, הַטִּיפּוֹת לוֹכְדוֹת אוֹתוֹ.',
+    q: 'מַדּוּעַ נִקְרָאִים צְמָחִים מֵהַסּוּג הַזֶּה "טוֹרְפִים"?',
+    options: ['כִּי יֵשׁ לָהֶם שִׁנַּיִם חַדּוֹת', 'כִּי הֵם אוֹכְלִים חֲרָקִים', 'כִּי הֵם גְּדוֹלִים מְאֹד', 'כִּי הֵם מַזִּיקִים לִבְנֵי אָדָם'],
+    correct: 1,
+    hint: 'הַמִּלָּה "טוֹרֵף" קְשׁוּרָה לְמַשֶּׁהוּ שֶׁאוֹכֵל בַּעֲלֵי חַיִּים',
+    minLevel: 7,
+  },
+  {
+    text: 'יוֹנָתָן לֹא אוֹהֵב לִישֹׁן. "שֵׁנָה זֶה בִּזְבּוּז זְמַן!" הוּא אוֹמֵר. אַבָּא וְאִמָּא חִיְּכוּ. בַּלַּיְלָה יוֹנָתָן הִסְתַּכֵּל מִן הַחַלּוֹן וְרָאָה יַנְשׁוּף עָף וְכוֹכָבִים נוֹצְצִים. כְּשֶׁהַשֶּׁמֶשׁ עָלְתָה הוּא חִיֵּךְ וְנִרְדַּם.',
+    q: 'מָה יוֹנָתָן חָשַׁב בְּסוֹף הַסִּפּוּר?',
+    options: ['שֶׁשֵּׁנָה זֶה בִּזְבּוּז זְמַן', 'שֶׁהַלַּיְלָה קָסוּם', 'שֶׁהַיּוֹם יוֹתֵר טוֹב', 'שֶׁהוּא רוֹצֶה לִישֹׁן הַרְבֵּה'],
+    correct: 1,
+    hint: 'מָה הוּא חָשַׁב בַּמִּשְׁפָּט הָאַחֲרוֹן?',
+    minLevel: 7,
   },
 ];
 
@@ -525,6 +641,126 @@ export function genIdiom(level: number, age: number, bypass = false): MCQ {
 }
 
 // =============================================================
+// MISSING NUMBER — fill the blank in equation (math, age 6+)
+// From official 2025 Ministry of Education exam — pure equation completion
+// =============================================================
+export function genMissingNumber(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
+  const op = L <= 4 ? pick(['+', '-']) : pick(['+', '-', '×']);
+  let a: number, b: number, ans: number;
+  if (L <= 3) { a = rand(2, 9); b = rand(1, 5); }
+  else if (L <= 5) { a = rand(10, 30); b = rand(2, 12); }
+  else if (L <= 7) { a = rand(20, 60); b = rand(5, 20); }
+  else { a = rand(40, 100); b = rand(10, 40); }
+
+  if (op === '-' && b > a) [a, b] = [b, a];
+  ans = op === '+' ? a + b : op === '-' ? a - b : a * b;
+  // Build "a OP ___ = ans" — solving for b
+  const { options, correctIdx } = buildOptions(
+    String(b),
+    [String(b + 1), String(Math.max(1, b - 1)), String(b + 2), String(Math.max(1, b - 2))].filter((v) => v !== String(b)),
+    () => String(Math.max(1, b + rand(-3, 3) || 1))
+  );
+  return {
+    prompt: `${a} ${op} ___ = ${ans}\n\nאֵיזֶה מִסְפָּר חָסֵר?`,
+    options,
+    correct: correctIdx,
+    hintContext: `הָפֵךְ אֶת הַתַּרְגִּיל: ${ans} ${op === '+' ? '−' : op === '−' ? '+' : '÷'} ${a}`,
+    dir: 'rtl',
+  };
+}
+
+// =============================================================
+// PICTURE EQUATIONS — math riddles where pictures = numbers (level 4+)
+// From official 2025 exam — "✿ + ✿ = 6, ✿ + ✿ + ⭐ = 14"
+// =============================================================
+export function genPictureEq(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
+  const symbols = ['🌸', '⭐', '💎', '🔑', '🏠', '🚗', '🍎', '🎈'];
+  const [s1, s2] = shuffle(symbols).slice(0, 2);
+  // s1 has value v1, s2 has value v2 — solve for v2
+  const v1 = L <= 4 ? rand(2, 5) : rand(3, 9);
+  const v2 = L <= 4 ? rand(1, 6) : rand(2, 12);
+  const eq1 = v1 + v1; // s1+s1 = 2v1
+  const eq2 = v1 + v2; // s1+s2 = v1+v2
+  const { options, correctIdx } = buildOptions(
+    String(v2),
+    [String(v2 + 1), String(Math.max(1, v2 - 1)), String(v2 + 2), String(v1)].filter((v) => v !== String(v2)),
+    () => String(Math.max(1, v2 + rand(1, 5)))
+  );
+  return {
+    prompt: `${s1} + ${s1} = ${eq1}\n${s1} + ${s2} = ${eq2}\n\nאֵיזֶה מִסְפָּר מַתְאִים לְ-${s2}?`,
+    options,
+    correct: correctIdx,
+    hintContext: `קֹדֶם מָצָא אֶת הָעֵרֶךְ שֶׁל ${s1}, וְאָז חַסֵּר`,
+    dir: 'rtl',
+  };
+}
+
+// =============================================================
+// SENTENCE COMPLETION — fill in the blanks (verbal, age 6+)
+// =============================================================
+type ClozeQ = {
+  prompt: string;
+  options: string[];
+  correct: number;
+  hint: string;
+  minLevel: number;
+};
+const CLOZES: ClozeQ[] = [
+  {
+    prompt: 'דָּנִי מְאֹד ____. מָחָר חָל יוֹם הֻלַּדְתּוֹ, וְהוּא יְקַבֵּל הָמוֹן ____ מֵחֲבֵרָיו לַכִּתָּה.',
+    options: ['חוֹלֶה, תְּרוּפָה', 'שָׂמֵחַ, שִׂמְחָה', 'נִרְגָּשׁ, מַתָּנוֹת', 'כּוֹעֵס, סְלִיחוֹת'],
+    correct: 2,
+    hint: 'מָה מְקַבְּלִים בְּיוֹם הֻלֶּדֶת?',
+    minLevel: 5,
+  },
+  {
+    prompt: 'בְּכָל עֶרֶב אֲנִי מְחַכֶּה בְּכִלְיוֹן ____ לְאַבָּא שֶׁלִּי, שֶׁיַּחֲזֹר מֵהָעֲבוֹדָה.',
+    options: ['שְׂפָתַיִם', 'יָדַיִם', 'עֵינַיִם', 'נֶפֶשׁ'],
+    correct: 2,
+    hint: 'הַבִּטּוּי "מְחַכֶּה בְּכִלְיוֹן ____"',
+    minLevel: 6,
+  },
+  {
+    prompt: 'דָּוִיד אוֹהֵב כַּדּוּרֶגֶל, וּמֹשֶׁה אוֹהֵב כַּדּוּרְסַל. עַל ____ וְעַל ____ אֵין לְהִתְוַכֵּחַ.',
+    options: ['אַהֲבָה, תַּחְבִּיבִים', 'טַעַם, רֵיחַ', 'כֵּיף, סְפּוֹרְט', 'מִשְׂחָק, חוּג'],
+    correct: 1,
+    hint: 'הַבִּטּוּי הָעַתִּיק עַל הַעְדָּפוֹת אִישִׁיּוֹת',
+    minLevel: 7,
+  },
+  {
+    prompt: 'מִבְנֵה גּוּפוֹ שֶׁל הַגָּמָל מַתְאִים לְחַיִּים ____. נְקֵבַת הַגָּמָל נִקְרֵאת ____.',
+    options: ['בַּמִּדְבָּר, נָאקָה', 'יָפִים, אָתוֹן', 'בַּמִּדְבָּר, נְמָלָה', 'יְבֵשִׁים, שֶׁמֶשׁ'],
+    correct: 0,
+    hint: 'אֵיפֹה גָּמָל גָּר וּמַה שֵּׁם הַנְּקֵבָה',
+    minLevel: 6,
+  },
+  {
+    prompt: 'טִיַּלְתִּי בַּשָּׂדֶה, קָטַפְתִּי פְּרָחִים, ____ זֵר. אֶתֵּן אֶת הַזֵּר לְאִמָּא.',
+    options: ['וְעָרַכְתִּי', 'וְשָׁזַרְתִּי', 'שָׁמַעְתִּי', 'צְהֻבִּים'],
+    correct: 1,
+    hint: 'מָה עוֹשִׂים מִפְּרָחִים כְּדֵי לִבְנוֹת זֵר?',
+    minLevel: 7,
+  },
+];
+
+export function genCloze(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
+  const eligible = CLOZES.filter((c) => c.minLevel <= L);
+  if (!eligible.length) return genSynonym(level, age, bypass);
+  const c = pick(eligible);
+  const options = [...c.options];
+  return {
+    prompt: c.prompt,
+    options,
+    correct: c.correct,
+    hintContext: c.hint,
+    dir: 'rtl',
+  };
+}
+
+// =============================================================
 // MAIN dispatcher
 // =============================================================
 export function generate(gameId: string, level: number, age: number = 6, bypass = false): MCQ {
@@ -538,6 +774,9 @@ export function generate(gameId: string, level: number, age: number = 6, bypass 
     case 'reading': return genReading(level, age, bypass);
     case 'synonym': return genSynonym(level, age, bypass);
     case 'idiom': return genIdiom(level, age, bypass);
+    case 'cloze': return genCloze(level, age, bypass);
+    case 'missing': return genMissingNumber(level, age, bypass);
+    case 'pictureeq': return genPictureEq(level, age, bypass);
     default: return genPattern(level, age, bypass);
   }
 }

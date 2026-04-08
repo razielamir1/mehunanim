@@ -24,6 +24,9 @@ export const GAMES: GameMeta[] = [
   { id: 'synonym', title: 'מילים נרדפות', titleEn: 'Synonyms', subtitle: 'מילים בעלות משמעות דומה', subtitleEn: 'Similar meaning words', emoji: '📝', gradient: 'from-violet-400 to-purple-500', category: 'verbal', minLevel: 3 },
   { id: 'reading', title: 'הבנת הנקרא', titleEn: 'Reading', subtitle: 'קרא וענה', subtitleEn: 'Read and answer', emoji: '📖', gradient: 'from-cyan-400 to-sky-500', category: 'reading', minLevel: 4 },
   { id: 'idiom', title: 'ביטויים', titleEn: 'Idioms', subtitle: 'מה זה אומר?', subtitleEn: 'What does it mean?', emoji: '💬', gradient: 'from-rose-400 to-pink-500', category: 'verbal', minLevel: 5 },
+  { id: 'cloze', title: 'הַשְׁלָמַת מִשְׁפָּטִים', titleEn: 'Sentence Completion', subtitle: 'מָה חָסֵר?', subtitleEn: 'What\'s missing?', emoji: '📝', gradient: 'from-teal-400 to-emerald-500', category: 'verbal', minLevel: 5 },
+  { id: 'missing', title: 'הַמִּסְפָּר הֶחָסֵר', titleEn: 'Missing Number', subtitle: 'הַשְׁלֵם אֶת הַתַּרְגִּיל', subtitleEn: 'Complete the equation', emoji: '🔢', gradient: 'from-yellow-400 to-amber-500', category: 'quantitative', minLevel: 3 },
+  { id: 'pictureeq', title: 'חִידוֹת בְּצִיּוּרִים', titleEn: 'Picture Riddles', subtitle: 'כָּל צִיּוּר = מִסְפָּר', subtitleEn: 'Each picture = a number', emoji: '🌸', gradient: 'from-lime-400 to-green-500', category: 'quantitative', minLevel: 4 },
 ];
 
 // Compute the user's effective global level (used to gate unlocks)

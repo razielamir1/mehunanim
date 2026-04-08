@@ -67,8 +67,17 @@ export default async function handler(req: Request) {
   const mode = clean(body?.mode, 20);
   const payload = body?.payload ?? {};
   const locale = body?.locale === 'en' ? 'en' : 'he';
-  const KID_SYSTEM = locale === 'en' ? KID_SYSTEM_EN : KID_SYSTEM_HE;
-  const COACH_SYSTEM = locale === 'en' ? COACH_SYSTEM_EN : COACH_SYSTEM_HE;
+  const gender: 'male' | 'female' | 'neutral' =
+    body?.gender === 'male' ? 'male' : body?.gender === 'female' ? 'female' : 'neutral';
+  const genderInstr = locale === 'en'
+    ? '' // English doesn't conjugate
+    : gender === 'male'
+      ? 'פנה אל הילד בלשון זכר ("אתה תצליח", "כל הכבוד, חכם!"). הקפד על התאמה דקדוקית מלאה.'
+      : gender === 'female'
+        ? 'פני אל הילדה בלשון נקבה ("את תצליחי", "כל הכבוד, חכמה!"). הקפידי על התאמה דקדוקית מלאה.'
+        : 'פנו אל הילד/ה בלשון רבים או בלשון נייטרלית, בלי להניח מגדר ספציפי.';
+  const KID_SYSTEM = (locale === 'en' ? KID_SYSTEM_EN : KID_SYSTEM_HE) + (genderInstr ? '\n' + genderInstr : '');
+  const COACH_SYSTEM = (locale === 'en' ? COACH_SYSTEM_EN : COACH_SYSTEM_HE) + (genderInstr ? '\n' + genderInstr : '');
   if (!['hint', 'explain', 'insight', 'analyze', 'chat'].includes(mode)) {
     return json({ error: 'bad-mode' }, 400);
   }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Mascot from '@/components/WorldMascot';
-import { useStore, Age } from '@/store/useStore';
+import { useStore, Age, Gender } from '@/store/useStore';
 import { sfx, haptic } from '@/lib/sound';
 import { useT } from '@/i18n';
 
@@ -16,8 +16,12 @@ export default function Landing() {
   const exAge = useStore((s) => s.age);
   const exCity = useStore((s) => s.city);
   const exAvatar = useStore((s) => s.avatar);
+  const profiles = useStore((s) => s.profiles);
+  const activeId = useStore((s) => s.activeProfileId);
+  const exProfile = profiles.find((p) => p.id === activeId);
   const [name, setName] = useState(existing);
   const [age, setAge] = useState<Age>(exAge);
+  const [gender, setGender] = useState<Gender>(exProfile?.gender ?? 'neutral');
   const [city, setCity] = useState(exCity);
   const [avatar, setAvatar] = useState(exAvatar);
 
@@ -25,7 +29,7 @@ export default function Landing() {
   const start = () => {
     sfx.tap(); haptic();
     const fallbackName = locale === 'en' ? 'Friend' : 'חבר';
-    setProfile({ name: name.trim() || fallbackName, age, city: city.trim(), avatar });
+    setProfile({ name: name.trim() || fallbackName, age, gender, city: city.trim(), avatar });
     nav('/dashboard');
   };
 
@@ -69,6 +73,27 @@ export default function Landing() {
             dir="auto"
             className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 px-4 py-4 text-lg text-start focus:border-brand-500 focus:outline-none" maxLength={30} />
         </div>
+        <div>
+          <label className="block text-start font-bold mb-2">מִי אֲנִי?</label>
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              { v: 'male', label: '🚹 בֵּן' },
+              { v: 'female', label: '🚺 בַּת' },
+              { v: 'neutral', label: 'מַעֲדִיף לֹא' },
+            ] as { v: Gender; label: string }[]).map((g) => (
+              <button
+                key={g.v}
+                onClick={() => { sfx.tap(); setGender(g.v); }}
+                className={`min-h-[64px] rounded-2xl font-black transition px-2 text-sm ${
+                  gender === g.v
+                    ? 'bg-gradient-to-l from-indigo-500 to-pink-500 text-white shadow-lg scale-105'
+                    : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700'
+                }`}
+              >{g.label}</button>
+            ))}
+          </div>
+        </div>
+
         <div>
           <label className="block text-start font-bold mb-2">{t('age')}</label>
           <div className="grid grid-cols-7 gap-1.5">

@@ -4,6 +4,7 @@ import { Home, BarChart3, MessageCircle, Settings as Cog } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useT } from '@/i18n';
 import WorldBackground from './WorldBackground';
+import ErrorBoundary from './ErrorBoundary';
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
@@ -20,7 +21,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
           'max-w-3xl md:max-w-5xl lg:max-w-6xl',
           showNav ? 'pb-28 md:pb-32' : 'pb-6'
         )}
-      >{children}</main>
+      >
+        <ErrorBoundary>{children}</ErrorBoundary>
+      </main>
       {showNav && (
         <nav className="fixed bottom-0 inset-x-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-t border-slate-200 dark:border-slate-800">
           <div className="max-w-3xl mx-auto grid grid-cols-4 gap-1 p-2">

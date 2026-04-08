@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, Trash2, Check, Star, ArrowRight } from 'lucide-react';
-import { useStore, Age } from '@/store/useStore';
+import { useStore, Age, Gender } from '@/store/useStore';
 import { sfx, haptic } from '@/lib/sound';
 import { useT } from '@/i18n';
 
@@ -20,6 +20,7 @@ export default function Profiles() {
   const [showNew, setShowNew] = useState(false);
   const [name, setName] = useState('');
   const [age, setAge] = useState<Age>(6);
+  const [gender, setGender] = useState<Gender>('neutral');
   const [city, setCity] = useState('');
   const [avatar, setAvatar] = useState('🦊');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -33,7 +34,7 @@ export default function Profiles() {
   const create = () => {
     if (!name.trim()) return;
     sfx.correct(); haptic();
-    addProfile({ name: name.trim(), age, city: city.trim(), avatar });
+    addProfile({ name: name.trim(), age, gender, city: city.trim(), avatar });
     nav('/dashboard');
   };
 
@@ -140,6 +141,27 @@ export default function Profiles() {
               className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 px-4 py-4 text-lg text-start focus:border-brand-500 focus:outline-none"
             />
           </div>
+          <div>
+            <label className="block text-start font-bold mb-2">מִי אֲנִי?</label>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { v: 'male', label: '🚹 בֵּן' },
+                { v: 'female', label: '🚺 בַּת' },
+                { v: 'neutral', label: 'מַעֲדִיף לֹא לְהַגִּיד' },
+              ] as { v: Gender; label: string }[]).map((g) => (
+                <button
+                  key={g.v}
+                  onClick={() => { sfx.tap(); setGender(g.v); }}
+                  className={`min-h-[64px] rounded-2xl font-black transition px-2 text-sm ${
+                    gender === g.v
+                      ? 'bg-gradient-to-l from-indigo-500 to-pink-500 text-white shadow-lg scale-105'
+                      : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700'
+                  }`}
+                >{g.label}</button>
+              ))}
+            </div>
+          </div>
+
           <div>
             <label className="block text-start font-bold mb-2">{t('howOld')}</label>
             <div className="grid grid-cols-7 gap-1.5">
