@@ -101,6 +101,13 @@ type State = {
   ttsOn: boolean;
   a11y: A11ySettings;
 
+  // Cloud sync
+  cloudUid: string | null;
+  cloudEmail: string | null;
+  lastSyncAt: number;
+  setCloudUser: (uid: string | null, email: string | null) => void;
+  applyCloudData: (profiles: Profile[], activeProfileId: string, syncedAt: number) => void;
+
   // Profile actions
   addProfile: (overrides?: Partial<Profile>) => string;
   switchProfile: (id: string) => void;
@@ -172,6 +179,15 @@ export const useStore = create<State>()(
       soundOn: true,
       ttsOn: false,
       a11y: DEFAULT_A11Y,
+      cloudUid: null,
+      cloudEmail: null,
+      lastSyncAt: 0,
+
+      setCloudUser: (cloudUid, cloudEmail) => set({ cloudUid, cloudEmail }),
+      applyCloudData: (profiles, activeProfileId, syncedAt) => {
+        if (!profiles || profiles.length === 0) return;
+        set({ profiles, activeProfileId, lastSyncAt: syncedAt, ...mirror(profiles, activeProfileId) });
+      },
 
       // ---- profile management ----
       addProfile: (overrides) => {

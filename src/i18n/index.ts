@@ -83,6 +83,9 @@ const dict = {
     pickWorld: 'בחר עולם',
     accessibility: 'נגישות',
     myKids: 'הילדים שלי',
+    cloudSync: 'סנכרון בענן',
+    signedInAs: 'מחובר כ',
+    signOut: 'התנתק',
 
     // Coach
     coachTitle: 'ד"ר מורן — יועצת מומחית',
@@ -258,6 +261,9 @@ const dict = {
     pickWorld: 'Pick a world',
     accessibility: 'Accessibility',
     myKids: 'My kids',
+    cloudSync: 'Cloud sync',
+    signedInAs: 'Signed in as',
+    signOut: 'Sign out',
 
     // Coach
     coachTitle: 'Dr. Moran — Expert advisor',

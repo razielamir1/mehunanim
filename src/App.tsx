@@ -11,9 +11,12 @@ import Worlds from './pages/Worlds';
 import Accessibility from './pages/Accessibility';
 import Profiles from './pages/Profiles';
 import MockExam from './pages/MockExam';
+import Login from './pages/Login';
 import AppShell from './components/AppShell';
+import { useCloudSync } from './hooks/useCloudSync';
 
 export default function App() {
+  useCloudSync();
   return (
     <AppShell>
       <Routes>
@@ -28,6 +31,7 @@ export default function App() {
         <Route path="/accessibility" element={<Accessibility />} />
         <Route path="/profiles" element={<Profiles />} />
         <Route path="/mock-exam" element={<MockExam />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

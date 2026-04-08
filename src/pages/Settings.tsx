@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
-import { Volume2, VolumeX, Sun, Moon, Mic, Languages, UserCog, Sparkles, Accessibility as A11yIcon, Users, MessageSquare } from 'lucide-react';
+import { Volume2, VolumeX, Sun, Moon, Mic, Languages, UserCog, Sparkles, Accessibility as A11yIcon, Users, MessageSquare, Cloud, LogOut } from 'lucide-react';
+import { signOutUser, isFirebaseConfigured } from '@/lib/firebase';
 import { useT } from '@/i18n';
 import { Link } from 'react-router-dom';
 import FeedbackModal from '@/components/FeedbackModal';
@@ -19,7 +20,14 @@ export default function Settings() {
   const toggleTts = useStore((s) => s.toggleTts);
   const setTheme = useStore((s) => s.setTheme);
   const setLocale = useStore((s) => s.setLocale);
+  const cloudEmail = useStore((s) => s.cloudEmail);
+  const setCloudUser = useStore((s) => s.setCloudUser);
   const [showFeedback, setShowFeedback] = useState(false);
+
+  const onSignOut = async () => {
+    await signOutUser();
+    setCloudUser(null, null);
+  };
 
   return (
     <div className="space-y-4">
@@ -66,6 +74,26 @@ export default function Settings() {
         <span className="flex items-center gap-2"><Users className="w-5 h-5" /> {t('myKids')}</span>
         <span>›</span>
       </Link>
+
+      {isFirebaseConfigured && (
+        cloudEmail ? (
+          <div className="card !p-3 space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Cloud className="w-5 h-5 text-emerald-500" />
+              <span className="font-bold">{t('signedInAs')}:</span>
+              <span className="text-slate-500 truncate">{cloudEmail}</span>
+            </div>
+            <button onClick={onSignOut} className="btn-ghost w-full !min-h-[48px] text-sm text-rose-600">
+              <LogOut className="w-4 h-4" /> {t('signOut')}
+            </button>
+          </div>
+        ) : (
+          <Link to="/login" className="btn-ghost w-full justify-between">
+            <span className="flex items-center gap-2"><Cloud className="w-5 h-5" /> {t('cloudSync')}</span>
+            <span>›</span>
+          </Link>
+        )
+      )}
 
       <Link to="/worlds" className="btn-ghost w-full justify-between">
         <span className="flex items-center gap-2"><Sparkles className="w-5 h-5" /> {t('pickWorld')}</span>
