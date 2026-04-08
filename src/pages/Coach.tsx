@@ -11,10 +11,7 @@ export default function Coach() {
   const history = useStore((s) => s.chatHistory);
   const pushChat = useStore((s) => s.pushChat);
   const clearChat = useStore((s) => s.clearChat);
-  const name = useStore((s) => s.name);
   const age = useStore((s) => s.age);
-  const city = useStore((s) => s.city);
-  const attempts = useStore((s) => s.attempts);
   const levels = useStore((s) => s.levels);
 
   const [input, setInput] = useState('');
@@ -33,7 +30,8 @@ export default function Coach() {
     setInput('');
     setLoading(true);
     const recent = [...history, userMsg].slice(-10);
-    const ctx = { name, age, city, levels, recentAttempts: Object.fromEntries(Object.entries(attempts).map(([k, v]) => [k, (v as any[]).slice(-3)])) };
+    // Privacy: only forward age + levels (no PII like name/city)
+    const ctx = { age, levels };
     const reply = await askGemini('chat', { history: recent, ctx });
     pushChat({ role: 'model', text: reply, ts: Date.now() });
     setLoading(false);
@@ -52,7 +50,7 @@ export default function Coach() {
           <div className="text-xs text-slate-500">{t('coachSub')}</div>
         </div>
         {history.length > 0 && (
-          <button onClick={clearChat} className="text-slate-400 hover:text-rose-500 p-2"><Trash2 className="w-5 h-5" /></button>
+          <button onClick={clearChat} aria-label={t('clearChat')} className="text-slate-400 hover:text-rose-500 p-2 min-w-[44px] min-h-[44px]"><Trash2 className="w-5 h-5" /></button>
         )}
       </div>
 
@@ -80,11 +78,20 @@ export default function Coach() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && send()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !(e.nativeEvent as any).isComposing) send();
+          }}
           placeholder={t('coachPh')}
-          className="flex-1 rounded-full border-2 border-slate-200 px-5 py-3 focus:border-brand-500 focus:outline-none"
+          dir="auto"
+          aria-label={t('coachPh')}
+          className="flex-1 rounded-full border-2 border-slate-200 dark:border-slate-700 px-5 py-3 focus:border-brand-500 focus:outline-none"
         />
-        <button onClick={send} disabled={loading || !input.trim()} className="btn-primary !min-h-[52px] !px-5 disabled:opacity-50">
+        <button
+          onClick={send}
+          disabled={loading || !input.trim()}
+          aria-label={t('send')}
+          className="btn-primary !min-h-[52px] !px-5 disabled:opacity-50"
+        >
           <Send className="w-5 h-5" />
         </button>
       </div>

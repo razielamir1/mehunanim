@@ -27,12 +27,12 @@
   html.a11y-large { font-size: 112.5%; }
   html.a11y-xlarge { font-size: 125%; }
 
-  /* Accessibility — dyslexia-friendly */
+  /* Accessibility — dyslexia-friendly: Varela Round renders Hebrew well + spacing */
   html.a11y-dyslexia body {
-    font-family: 'Comic Sans MS', 'Varela Round', sans-serif;
+    font-family: 'Varela Round', 'Rubik', sans-serif;
     letter-spacing: 0.04em;
-    word-spacing: 0.12em;
-    line-height: 1.7;
+    word-spacing: 0.16em;
+    line-height: 1.8;
   }
 
   /* Accessibility — underline links */

@@ -58,12 +58,14 @@ export default function Landing() {
         <div>
           <label className="block text-start font-bold mb-2">{t('name')}</label>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('namePh')}
-            className="w-full rounded-2xl border-2 border-slate-200 px-4 py-4 text-lg text-start focus:border-brand-500 focus:outline-none" maxLength={20} />
+            dir="auto"
+            className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 px-4 py-4 text-lg text-start focus:border-brand-500 focus:outline-none" maxLength={20} />
         </div>
         <div>
           <label className="block text-start font-bold mb-2">{t('city')}</label>
           <input value={city} onChange={(e) => setCity(e.target.value)} placeholder={t('cityPh')}
-            className="w-full rounded-2xl border-2 border-slate-200 px-4 py-4 text-lg text-start focus:border-brand-500 focus:outline-none" maxLength={30} />
+            dir="auto"
+            className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 px-4 py-4 text-lg text-start focus:border-brand-500 focus:outline-none" maxLength={30} />
         </div>
         <div>
           <label className="block text-start font-bold mb-2">{t('age')}</label>

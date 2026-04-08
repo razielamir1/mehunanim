@@ -4,8 +4,34 @@ export type ReadDir = 'rtl' | 'ltr';
 export type MCQ = { prompt: string; options: string[]; correct: number; hintContext: string; dir: ReadDir };
 
 const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
-const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
+// Fisher–Yates (unbiased)
+const shuffle = <T,>(arr: T[]): T[] => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
 const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+// Build a 4-option MCQ where the correct answer is unique among 3 distractors.
+// `gen` produces extra distractor candidates; we dedupe and pad if needed.
+const buildOptions = (correct: string, candidates: string[], pad: () => string): { options: string[]; correctIdx: number } => {
+  const seen = new Set<string>([correct]);
+  const distractors: string[] = [];
+  for (const c of candidates) {
+    if (distractors.length >= 3) break;
+    if (!seen.has(c)) { seen.add(c); distractors.push(c); }
+  }
+  let safety = 0;
+  while (distractors.length < 3 && safety++ < 50) {
+    const v = pad();
+    if (!seen.has(v)) { seen.add(v); distractors.push(v); }
+  }
+  const options = shuffle([correct, ...distractors]);
+  return { options, correctIdx: options.indexOf(correct) };
+};
 
 // ---------------- Pattern ----------------
 const SHAPES = ['🔴', '🟦', '🟢', '🟡', '🔺', '⬛', '⭐', '❤️', '💜', '🟧'];
@@ -13,12 +39,24 @@ export function genPattern(level: number): MCQ {
   const poolSize = Math.min(2 + Math.floor(level / 2), 5);
   const reps = level <= 2 ? 2 : 3;
   const pool = shuffle(SHAPES).slice(0, poolSize);
+  // Show full reps then partial — the missing element is the next in cycle
   const seq: string[] = [];
   for (let i = 0; i < reps; i++) seq.push(...pool);
-  const answer = pool[0];
-  const distractors = shuffle(SHAPES.filter((s) => !pool.includes(s))).slice(0, Math.min(3, level + 1));
-  const options = shuffle([answer, ...distractors]);
-  return { prompt: seq.join(' '), options, correct: options.indexOf(answer), hintContext: `הרצף חוזר על עצמו: ${pool.join('-')}`, dir: 'rtl' };
+  // Drop last item and ask for it (the answer continues the cycle)
+  const answer = seq.pop()!;
+  const visible = [...seq, '❓'];
+  const { options, correctIdx } = buildOptions(
+    answer,
+    SHAPES.filter((s) => s !== answer),
+    () => pick(SHAPES.filter((s) => s !== answer))
+  );
+  return {
+    prompt: visible.join(' '),
+    options,
+    correct: correctIdx,
+    hintContext: `הרצף חוזר על עצמו: ${pool.join('-')}`,
+    dir: 'rtl',
+  };
 }
 
 // ---------------- Odd one out ----------------
@@ -46,8 +84,12 @@ export function genSequence(level: number): MCQ {
   const step = pick(stepOptions);
   const seq = [start, start + step, start + 2 * step, start + 3 * step];
   const answer = start + 4 * step;
-  const opts = shuffle([answer, answer + 1, answer - step, answer + step * 2]).map(String);
-  return { prompt: `${seq.join(' , ')} , ?`, options: opts, correct: opts.indexOf(String(answer)), hintContext: `בכל פעם מוסיפים ${step}`, dir: 'ltr' };
+  const { options, correctIdx } = buildOptions(
+    String(answer),
+    [answer + step, answer - step, answer + 1, answer + 2 * step].filter((n) => n >= 0).map(String),
+    () => String(Math.max(0, answer + rand(-step * 2, step * 2)))
+  );
+  return { prompt: `${seq.join(' , ')} , ?`, options, correct: correctIdx, hintContext: `בכל פעם מוסיפים ${step}`, dir: 'ltr' };
 }
 
 // ---------------- Analogies ----------------
@@ -69,12 +111,16 @@ export function genAnalogy(_level: number): MCQ {
 // ---------------- Memory ----------------
 export function genMemory(level: number): MCQ {
   const len = Math.min(3 + Math.floor(level / 2), 7);
-  const seq: string[] = [];
-  for (let i = 0; i < len; i++) seq.push(pick(SHAPES));
+  // Use unique shapes for the sequence so the "what was at position N" question is unambiguous
+  const seq = shuffle(SHAPES).slice(0, len);
   const idx = rand(0, len - 1);
   const answer = seq[idx];
-  const options = shuffle([answer, ...shuffle(SHAPES.filter((s) => s !== answer)).slice(0, 3)]);
-  return { prompt: `זכור: ${seq.join(' ')}  •  מה היה במקום ה-${idx + 1}?`, options, correct: options.indexOf(answer), hintContext: `ספור מימין לשמאל`, dir: 'rtl' };
+  const { options, correctIdx } = buildOptions(
+    answer,
+    SHAPES.filter((s) => s !== answer),
+    () => pick(SHAPES.filter((s) => s !== answer))
+  );
+  return { prompt: `זכור: ${seq.join(' ')}  •  מה היה במקום ה-${idx + 1}?`, options, correct: correctIdx, hintContext: `ספור מימין לשמאל`, dir: 'rtl' };
 }
 
 // ---------------- Math sprint (arithmetic + word problems) ----------------
@@ -94,8 +140,12 @@ export function genMath(level: number): MCQ {
   if (op === '-' && b > a) [a, b] = [b, a];
   ans = op === '+' ? a + b : op === '-' ? a - b : a * b;
 
-  const opts = shuffle([ans, ans + 1, ans - 1, ans + (op === '×' ? 2 : rand(2, 5))]).map(String);
-  return { prompt: `${a} ${op} ${b} = ?`, options: opts, correct: opts.indexOf(String(ans)), hintContext: `חשב צעד אחר צעד`, dir: 'ltr' };
+  const { options, correctIdx } = buildOptions(
+    String(ans),
+    [ans + 1, ans - 1, ans + 2, ans + (op === '×' ? 2 : rand(2, 5))].filter((n) => n >= 0).map(String),
+    () => String(Math.max(0, ans + rand(-3, 3) || 1))
+  );
+  return { prompt: `${a} ${op} ${b} = ?`, options, correct: correctIdx, hintContext: `חשב צעד אחר צעד`, dir: 'ltr' };
 }
 
 function genWordProblem(level: number): MCQ {
@@ -103,26 +153,34 @@ function genWordProblem(level: number): MCQ {
     // money - multi-step (target: end of grade 2)
     () => {
       const wallet = rand(20, 100);
-      const itemPrice = rand(5, Math.floor(wallet / 2));
       const qty = rand(2, 3);
+      const itemPrice = rand(5, Math.floor((wallet - 1) / qty));
       const ans = wallet - itemPrice * qty;
-      const opts = shuffle([ans, ans + itemPrice, ans - 1, wallet - itemPrice]).map(String);
+      const { options, correctIdx } = buildOptions(
+        String(ans),
+        [ans + itemPrice, ans + qty, wallet - itemPrice, ans + 5].filter((n) => n >= 0 && n !== ans).map(String),
+        () => String(Math.max(0, ans + rand(1, 10)))
+      );
       return {
         prompt: `יש לי ${wallet} ₪. אני קונה ${qty} משחקים בעלות של ${itemPrice} ₪ כל אחד. כמה כסף יישאר לי?`,
-        options: opts, correct: opts.indexOf(String(ans)),
+        options, correct: correctIdx,
         hintContext: `קודם חשב כמה עולים ${qty} משחקים, ואז חסר מהסכום שיש לי`,
         dir: 'rtl',
       };
     },
-    // sharing
+    // sharing — force exact divisibility
     () => {
-      const total = rand(2, 8) * rand(2, 5);
-      const kids = pick([2, 3, 4, 5]).valueOf();
-      const each = Math.floor(total / kids);
-      const opts = shuffle([each, each + 1, each - 1, total - kids]).map(String);
+      const kids = pick([2, 3, 4, 5]);
+      const each = rand(2, 8);
+      const total = each * kids;
+      const { options, correctIdx } = buildOptions(
+        String(each),
+        [each + 1, each + 2, total - kids, kids].filter((n) => n > 0 && n !== each).map(String),
+        () => String(Math.max(1, each + rand(1, 4)))
+      );
       return {
         prompt: `ל-${kids} ילדים יש לחלק ${total} סוכריות בשווה. כמה סוכריות יקבל כל ילד?`,
-        options: opts, correct: opts.indexOf(String(each)),
+        options, correct: correctIdx,
         hintContext: `חלק את הסוכריות שווה בשווה`,
         dir: 'rtl',
       };
@@ -133,10 +191,14 @@ function genWordProblem(level: number): MCQ {
       const added = rand(3, 15);
       const removed = rand(2, Math.min(start + added - 1, 10));
       const ans = start + added - removed;
-      const opts = shuffle([ans, ans + 1, ans - 1, start + added]).map(String);
+      const { options, correctIdx } = buildOptions(
+        String(ans),
+        [start + added, ans + removed, ans + 2, ans + 1].filter((n) => n >= 0 && n !== ans).map(String),
+        () => String(Math.max(0, ans + rand(1, 5)))
+      );
       return {
         prompt: `בכיתה היו ${start} ילדים. הגיעו עוד ${added} ילדים, ואז ${removed} ילדים הלכו הביתה. כמה ילדים נשארו?`,
-        options: opts, correct: opts.indexOf(String(ans)),
+        options, correct: correctIdx,
         hintContext: `קודם הוסף, ואחר כך חסר`,
         dir: 'rtl',
       };
@@ -145,10 +207,14 @@ function genWordProblem(level: number): MCQ {
     () => {
       const a = rand(1, 5), b = rand(1, 5);
       const ans = a + b;
-      const opts = shuffle([ans, ans + 1, ans - 1, a]).map(String);
+      const { options, correctIdx } = buildOptions(
+        String(ans),
+        [ans + 1, ans + 2, a + 1, b + 1].filter((n) => n > 0 && n !== ans).map(String),
+        () => String(ans + rand(1, 4))
+      );
       return {
         prompt: `יש לי ${a} תפוחים וקיבלתי עוד ${b}. כמה תפוחים יש לי עכשיו?`,
-        options: opts, correct: opts.indexOf(String(ans)),
+        options, correct: correctIdx,
         hintContext: `ספור את כל התפוחים`,
         dir: 'rtl',
       };

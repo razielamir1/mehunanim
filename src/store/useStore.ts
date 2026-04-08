@@ -121,14 +121,16 @@ export const useStore = create<State>()(
         const s = get();
         const curLevel = s.levels[gameId] ?? startLevel(s.age);
         const attempt: Attempt = { ts: Date.now(), correct, total, level: curLevel };
-        const list = [...(s.attempts[gameId] ?? []), attempt];
+        // Cap attempts list to last 50 to prevent unbounded localStorage growth
+        const list = [...(s.attempts[gameId] ?? []), attempt].slice(-50);
         const pct = correct / total;
         const leveledUp = pct >= 0.8;
-        const newLevel = leveledUp ? curLevel + 1 : curLevel;
+        // Cap level at 10 (max designed difficulty)
+        const newLevel = leveledUp ? Math.min(curLevel + 1, 10) : curLevel;
         let newCollectible: string | undefined;
         const newCollectibles = [...s.collectibles];
-        const totalStars = s.stars + correct;
-        const earned = Math.floor(totalStars / 10);
+        // s.stars already includes the stars earned this round (addStar was called per correct answer)
+        const earned = Math.floor(s.stars / 10);
         if (earned > s.collectibles.length && earned <= COLLECTIBLE_LIST.length) {
           newCollectible = COLLECTIBLE_LIST[earned - 1];
           newCollectibles.push(newCollectible);
@@ -138,7 +140,7 @@ export const useStore = create<State>()(
           levels: { ...s.levels, [gameId]: newLevel },
           collectibles: newCollectibles,
         });
-        return { leveledUp, newCollectible };
+        return { leveledUp: leveledUp && newLevel > curLevel, newCollectible };
       },
       pushChat: (m) => set((s) => ({ chatHistory: [...s.chatHistory, m].slice(-50) })),
       clearChat: () => set({ chatHistory: [] }),

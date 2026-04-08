@@ -24,7 +24,6 @@ const burst = () =>
 export default function Play() {
   const { gameId = 'pattern' } = useParams();
   const nav = useNavigate();
-  const name = useStore((s) => s.name);
   const ttsOn = useStore((s) => s.ttsOn);
   const addStar = useStore((s) => s.addStar);
   const recordAttempt = useStore((s) => s.recordAttempt);
@@ -45,12 +44,15 @@ export default function Play() {
   useEffect(() => {
     if (!ttsOn || picked !== null) return;
     try {
-      const u = new SpeechSynthesisUtterance(q.prompt.replace(/[\n•]/g, ' '));
+      const u = new SpeechSynthesisUtterance(q.prompt.replace(/[\n•❓]/g, ' '));
       u.lang = 'he-IL';
       u.rate = 0.9;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(u);
     } catch {}
+    return () => {
+      try { window.speechSynthesis.cancel(); } catch {}
+    };
   }, [q, picked, ttsOn]);
 
   const pose = picked === null ? 'idle' : picked === q.correct ? 'celebrate' : 'thinking';
@@ -90,7 +92,7 @@ export default function Play() {
 
   const ask = async (mode: 'hint' | 'explain') => {
     setLoading(mode);
-    const text = await askGemini(mode, { gameId, question: q.prompt, context: q.hintContext, correct: q.options[q.correct], level, name });
+    const text = await askGemini(mode, { gameId, question: q.prompt, context: q.hintContext, correct: q.options[q.correct], level });
     if (mode === 'hint') setHint(text); else setExplain(text);
     setLoading(null);
   };
@@ -100,8 +102,8 @@ export default function Play() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <Link to="/dashboard" className="btn-ghost !min-h-[48px] !px-4 !py-2 text-sm">
-          <ArrowRight className="w-4 h-4 rotate-180" /> חזרה
+        <Link to="/dashboard" aria-label="חזרה לבית" className="btn-ghost !min-h-[48px] !px-4 !py-2 text-sm">
+          <ArrowRight className="w-4 h-4" /> חזרה
         </Link>
         <div className="flex items-center gap-3">
           {streak >= 2 && (

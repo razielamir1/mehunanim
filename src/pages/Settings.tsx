@@ -5,7 +5,14 @@ import { Link } from 'react-router-dom';
 
 export default function Settings() {
   const t = useT();
-  const { soundOn, ttsOn, theme, locale, name, age, city, avatar } = useStore();
+  const soundOn = useStore((s) => s.soundOn);
+  const ttsOn = useStore((s) => s.ttsOn);
+  const theme = useStore((s) => s.theme);
+  const locale = useStore((s) => s.locale);
+  const name = useStore((s) => s.name);
+  const age = useStore((s) => s.age);
+  const city = useStore((s) => s.city);
+  const avatar = useStore((s) => s.avatar);
   const toggleSound = useStore((s) => s.toggleSound);
   const toggleTts = useStore((s) => s.toggleTts);
   const setTheme = useStore((s) => s.setTheme);

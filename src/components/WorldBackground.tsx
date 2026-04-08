@@ -9,7 +9,9 @@ export default function WorldBackground() {
   const worldId = useStore((s) => s.worldId);
   const theme = useStore((s) => s.theme);
   const reduceMotion = useStore((s) => s.a11y.reduceMotion);
+  const highContrast = useStore((s) => s.a11y.highContrast);
   const world = getWorld(worldId);
+  if (highContrast) return null;
 
   const particles = useMemo(() => {
     const count = reduceMotion ? 6 : 18;
