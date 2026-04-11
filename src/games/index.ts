@@ -27,6 +27,8 @@ export const GAMES: GameMeta[] = [
   { id: 'cloze', title: 'הַשְׁלָמַת מִשְׁפָּטִים', titleEn: 'Sentence Completion', subtitle: 'מָה חָסֵר?', subtitleEn: 'What\'s missing?', emoji: '📝', gradient: 'from-teal-400 to-emerald-500', category: 'verbal', minLevel: 5 },
   { id: 'missing', title: 'הַמִּסְפָּר הֶחָסֵר', titleEn: 'Missing Number', subtitle: 'הַשְׁלֵם אֶת הַתַּרְגִּיל', subtitleEn: 'Complete the equation', emoji: '🔢', gradient: 'from-yellow-400 to-amber-500', category: 'quantitative', minLevel: 3 },
   { id: 'pictureeq', title: 'חִידוֹת בְּצִיּוּרִים', titleEn: 'Picture Riddles', subtitle: 'כָּל צִיּוּר = מִסְפָּר', subtitleEn: 'Each picture = a number', emoji: '🌸', gradient: 'from-lime-400 to-green-500', category: 'quantitative', minLevel: 4 },
+  { id: 'trivia', title: 'יֶדַע כְּלָלִי', titleEn: 'General Knowledge', subtitle: 'פִּתְגָמִים, גֵּאוֹגְרָפְיָה וְהִיסְטוֹרְיָה', subtitleEn: 'Proverbs, geography & history', emoji: '🧠', gradient: 'from-orange-400 to-red-500', category: 'verbal', minLevel: 2 },
+  { id: 'inequality', title: 'אִי-שִׁוְיוֹן', titleEn: 'Inequalities', subtitle: 'גָּדוֹל, קָטָן אוֹ שָׁוֶה?', subtitleEn: 'Greater, less, or equal?', emoji: '⚖️', gradient: 'from-cyan-400 to-blue-500', category: 'quantitative', minLevel: 4 },
 ];
 
 // Compute the user's effective global level (used to gate unlocks)

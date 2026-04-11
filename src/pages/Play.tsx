@@ -15,6 +15,7 @@ import { useT } from '@/i18n';
 import { hasSeenWalkthrough, markWalkthroughSeen } from '@/store/useStore';
 import Walkthrough from '@/components/Walkthrough';
 import BonusRound from '@/components/BonusRound';
+import MiniExam from '@/components/MiniExam';
 
 const ROUND = 5;
 
@@ -58,8 +59,10 @@ export default function Play() {
   const [showWalkthrough, setShowWalkthrough] = useState(() => !hasSeenWalkthrough(gameId, level));
   // Bonus round phase after main session ends
   const [showBonus, setShowBonus] = useState(false);
+  // Mini-exam phase (after bonus, before results)
+  const [showMiniExam, setShowMiniExam] = useState(false);
   const bonusEnabled = useStore((s) => s.bonusEnabled);
-  const finalResultRef = useRef<{ correct: number; total: number; leveledUp?: boolean; newCollectible?: string } | null>(null);
+  const finalResultRef = useRef<{ correct: number; total: number; leveledUp?: boolean; newCollectible?: string; bonusCorrect?: number } | null>(null);
 
   const { speak, stop } = useSpeak();
   // Auto-TTS only if user explicitly turned it on. No surprise speech.
@@ -101,7 +104,7 @@ export default function Play() {
           setShowBonus(true);
           return;
         }
-        nav('/results', { state: { correct: finalCorrect, total: ROUND, gameId, ...result, level } });
+        setShowMiniExam(true);
       } else {
         setIdx((x) => x + 1);
         next();
@@ -129,23 +132,39 @@ export default function Play() {
     return q.dir;
   }, [q.prompt, q.dir]);
 
+  if (showMiniExam) {
+    return (
+      <MiniExam
+        gameId={gameId}
+        age={age}
+        level={level}
+        onComplete={(mc) => {
+          const r = finalResultRef.current!;
+          nav('/results', {
+            state: {
+              correct: r.correct,
+              total: ROUND,
+              gameId,
+              leveledUp: r.leveledUp,
+              newCollectible: r.newCollectible,
+              level,
+              bonusCorrect: r.bonusCorrect,
+              miniExamCorrect: mc,
+            },
+          });
+        }}
+      />
+    );
+  }
+
   if (showBonus) {
     return (
       <BonusRound
         gameId={gameId}
         onComplete={(bonusCorrect) => {
-          const r = finalResultRef.current!;
-          nav('/results', {
-            state: {
-              correct: r.correct,
-              total: r.total,
-              gameId,
-              leveledUp: r.leveledUp,
-              newCollectible: r.newCollectible,
-              level,
-              bonusCorrect,
-            },
-          });
+          finalResultRef.current = { ...finalResultRef.current!, bonusCorrect };
+          setShowBonus(false);
+          setShowMiniExam(true);
         }}
       />
     );

@@ -44,6 +44,8 @@ const GAME_TO_CATEGORY: Record<string, ExamCategory> = {
   reading: 'verbal',
   sequence: 'math',
   math: 'math',
+  trivia: 'verbal',
+  inequality: 'math',
 };
 
 function pickBonusQuestions(gameId: string): ExamQ[] {

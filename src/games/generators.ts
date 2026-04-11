@@ -816,6 +816,117 @@ export function genCloze(level: number, age: number, bypass = false): MCQ {
 }
 
 // =============================================================
+// TRIVIA — "ידע כללי" (General Knowledge) from gulot.co.il exam bank
+// =============================================================
+type TriviaQ = { prompt: string; options: string[]; correct: number; hint: string; minLevel: number };
+const TRIVIA_BANK: TriviaQ[] = [
+  // Proverbs/Idioms understanding (ידע כללי)
+  {
+    prompt: 'מַה מַשְׁמָעוּת הַפִּתְגָּם: "בְּזֵעַת אַפֶּיךָ תֹּאכַל לֶחֶם"?',
+    options: ['יֵשׁ לִזְרוֹק לֶחֶם שֶׁנָּפַל', 'כְּדָאי לִשְׁטֹף יָדַיִם לִפְנֵי אֲרוּחָה', 'צָרִיךְ לַעֲבֹד קָשֶׁה כְּדֵי לְהַצְלִיחַ', 'לֹא כָּל לֶחֶם הוּא טָעִים'],
+    correct: 2, hint: 'פִּתְגָּם עַל עֲבוֹדָה קָשָׁה', minLevel: 5,
+  },
+  {
+    prompt: 'מַה מַשְׁמָעוּת הַפִּתְגָּם: "אַל תַּלְבִּין פְּנֵי חֲבֵרְךָ בָּרַבִּים"?',
+    options: ['אַל תַּעֲלִיב אָדָם לְיַד אֲנָשִׁים', 'חֲבֵרִים אוֹהֲבִים אֶת הַצֶּבַע הַלָּבָן', 'מִי שֶׁמַּעֲלִיב — פָּנָיו יַלְבִּינוּ', 'מִי שֶׁלֹּא מַעֲלִיב יִהְיוּ לוֹ חֲבֵרִים רַבִּים'],
+    correct: 0, hint: 'מָה אוֹמְרִים עַל הַעֲלָבָה בִּפְנֵי אֲחֵרִים?', minLevel: 5,
+  },
+  {
+    prompt: 'מַה מַשְׁמָעוּת הַפִּתְגָּם: "אֵיזֶהוּ גִּבּוֹר? הַכּוֹבֵשׁ אֶת יִצְרוֹ"?',
+    options: ['לֹא כָּל גִּבּוֹר מַצְלִיחַ לִכְבֹּשׁ', 'אִישׁ מֻצְלָח מְיַצֵּר הַמְצָאוֹת', 'גִּבּוֹר אֲמִתִּי מַצְלִיחַ לְהִתְאַפֵּק', 'יְצִירוֹת גְּדוֹלוֹת נוֹצְרוּ עַל יְדֵי גִּבּוֹרִים'],
+    correct: 2, hint: 'מָה זֶה "לִכְבֹּשׁ אֶת יִצְרוֹ"?', minLevel: 6,
+  },
+  // Geography
+  {
+    prompt: 'לְיַד אֵיזֶה יָם נִמְצֵאת הָעִיר תֵּל אָבִיב?',
+    options: ['יָם סוּף', 'הַיָּם הַתִּיכוֹן', 'יָם הַמֶּלַח', 'הָאוֹקְיָנוּס הַשָּׁקֵט'],
+    correct: 1, hint: 'תֵּל אָבִיב עַל חוֹף הַיָּם הַמַּעֲרָבִי שֶׁל יִשְׂרָאֵל', minLevel: 4,
+  },
+  {
+    prompt: 'אֵיזוֹ עִיר יוֹצֵאת דֹּפֶן? (בֶּרְלִין, יְרוּשָׁלַיִם, לוֹנְדוֹן, תֵּל אָבִיב)',
+    options: ['בֶּרְלִין', 'יְרוּשָׁלַיִם', 'לוֹנְדוֹן', 'תֵּל אָבִיב'],
+    correct: 1, hint: 'שָׁלוֹשׁ עָרִים הֵן בִּירוֹת שֶׁל מְדִינוֹת בְּאֵירוֹפָּה', minLevel: 6,
+  },
+  // History / inventions
+  {
+    prompt: 'מִי הָיָה נָשִׂיא הַמְּדִינָה הָרִאשׁוֹן שֶׁל יִשְׂרָאֵל?',
+    options: ['חַיִּים נָבוֹן', 'חַיִּים וַייצְמַן', 'בִּנְיָמִין נְתַנְיָהוּ', 'אָרִיק אַיינְשְׁטַיין'],
+    correct: 1, hint: 'מָדְעָן מִגְדוֹלֵי הַמַּדָּע שֶׁל הַמֵּאָה הָ-20', minLevel: 6,
+  },
+  {
+    prompt: 'מִי הִמְצִיא אֶת מַכְשִׁיר הַטֶּלֶפוֹן?',
+    options: ['אָלֶכְּסַנְדֵּר מוֹקְדוֹן', 'אָלֶכְּסַנְדֵּר גְּרָהָם בֵּל', 'מָקְס אַייפוֹן', 'חַיִּים נַחְמָן בִּיאָלִיק'],
+    correct: 1, hint: 'הַשֵּׁם שֶׁלּוֹ מַזְכִּיר צִלְצוּל', minLevel: 5,
+  },
+  // Nature / animals
+  {
+    prompt: 'אֵיזוֹ חַיָּה יוֹצֵאת דֹּפֶן? (כֶּלֶב, חָתוּל, נְמָלָה, אַרְנָב)',
+    options: ['כֶּלֶב', 'חָתוּל', 'נְמָלָה', 'אַרְנָב'],
+    correct: 2, hint: 'שָׁלוֹשׁ חַיּוֹת הֵן יוֹנְקִים', minLevel: 4,
+  },
+  // Simple for younger kids
+  {
+    prompt: 'כַּמָּה יָמִים יֵשׁ בְּשָׁבוּעַ?',
+    options: ['5', '6', '7', '8'],
+    correct: 2, hint: 'סְפֹר מִיּוֹם רִאשׁוֹן עַד שַׁבָּת', minLevel: 2,
+  },
+  {
+    prompt: 'כַּמָּה עוֹנוֹת יֵשׁ בְּשָׁנָה?',
+    options: ['2', '3', '4', '5'],
+    correct: 2, hint: 'חֹרֶף, אָבִיב, קַיִץ וְ...?', minLevel: 3,
+  },
+  {
+    prompt: 'אֵיזֶה צֶבַע מְקַבְּלִים כְּשֶׁמְּעָרְבְּבִים אָדֹם וְצָהֹב?',
+    options: ['יָרֹק', 'כָּתֹם', 'סָגֹל', 'חוּם'],
+    correct: 1, hint: 'חִשְׁבוּ עַל צֶבַע שֶׁל תַּפּוּז', minLevel: 2,
+  },
+  // From noam2025 — type relationships (gulot-style)
+  {
+    prompt: 'הַיּוֹם יוֹם שֵׁנִי. בְּעוֹד כַּמָּה יָמִים יִהְיֶה יוֹם חֲמִישִׁי?',
+    options: ['הַיּוֹם', 'שְׁלוֹשָׁה יָמִים', 'יוֹמַיִם', 'יוֹם אֶחָד'],
+    correct: 1, hint: 'סְפֹר: שְׁלִישִׁי, רְבִיעִי, חֲמִישִׁי', minLevel: 3,
+  },
+];
+
+export function genTrivia(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
+  const eligible = TRIVIA_BANK.filter((q) => q.minLevel <= L);
+  if (!eligible.length) return genOdd(level, age, bypass);
+  const q = pick(eligible);
+  return {
+    prompt: q.prompt,
+    options: [...q.options],
+    correct: q.correct,
+    hintContext: q.hint,
+    dir: 'rtl',
+  };
+}
+
+// =============================================================
+// INEQUALITY — "8 × 5 > 8 × ___" — from machon-noam 2025
+// =============================================================
+export function genInequality(level: number, age: number, bypass = false): MCQ {
+  const L = cappedLevel(level, age, bypass);
+  const a = L <= 4 ? rand(2, 5) : rand(3, 10);
+  const b = L <= 4 ? rand(2, 5) : rand(2, 12);
+  const isGreater = Math.random() > 0.5;
+  const op = isGreater ? '>' : '<';
+  const answer = isGreater ? rand(1, b - 1) : rand(b + 1, b + 5);
+  const { options, correctIdx } = buildOptions(
+    String(answer),
+    [String(b), String(answer + 1), String(Math.max(1, answer - 1)), String(answer + 2)].filter(v => v !== String(answer)),
+    () => String(Math.max(1, answer + rand(-2, 2) || 1))
+  );
+  return {
+    prompt: `${a} × ${b}  ${op}  ${a} × ___`,
+    options,
+    correct: correctIdx,
+    hintContext: `${a} × ${b} = ${a*b}, אֵיזֶה מִסְפָּר יְשַׁנֶּה אֶת הַתְּשׁוּבָה?`,
+    dir: 'ltr',
+  };
+}
+
+// =============================================================
 // MAIN dispatcher
 // =============================================================
 export function generate(gameId: string, level: number, age: number = 6, bypass = false): MCQ {
@@ -832,6 +943,8 @@ export function generate(gameId: string, level: number, age: number = 6, bypass 
     case 'cloze': return genCloze(level, age, bypass);
     case 'missing': return genMissingNumber(level, age, bypass);
     case 'pictureeq': return genPictureEq(level, age, bypass);
+    case 'trivia': return genTrivia(level, age, bypass);
+    case 'inequality': return genInequality(level, age, bypass);
     default: return genPattern(level, age, bypass);
   }
 }
