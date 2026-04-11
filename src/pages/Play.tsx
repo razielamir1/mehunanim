@@ -122,15 +122,17 @@ export default function Play() {
   const progressPct = useMemo(() => (idx / ROUND) * 100, [idx]);
 
   // Auto-detect actual reading direction from the prompt content.
-  // If the prompt contains Hebrew letters → RTL. If only numbers/symbols → LTR.
+  // RULE: everything is LTR (shapes, numbers, emojis) EXCEPT pure Hebrew text.
   const effectiveDir = useMemo<'rtl' | 'ltr'>(() => {
-    const hasHebrew = /[\u0590-\u05FF]/.test(q.prompt);
-    if (hasHebrew) return 'rtl';
-    const onlyNumeric = /^[\d\s+\-×÷=?,.()]*$/.test(q.prompt.trim());
-    if (onlyNumeric) return 'ltr';
-    // Visual emojis only — use the generator's hint
-    return q.dir;
-  }, [q.prompt, q.dir]);
+    // If prompt is purely Hebrew text (no emojis/shapes/numbers as primary content) → RTL
+    const stripped = q.prompt.replace(/[\s\u200F\u200E.,;:!?\-–—•❓_\n]/g, '');
+    const hebrewChars = (stripped.match(/[\u0590-\u05FF]/g) || []).length;
+    const totalChars = stripped.length;
+    // If more than 60% Hebrew characters → it's a text question, use RTL
+    if (totalChars > 0 && hebrewChars / totalChars > 0.6) return 'rtl';
+    // Everything else (emojis, numbers, shapes, sequences, mixed) → LTR
+    return 'ltr';
+  }, [q.prompt]);
 
   if (showMiniExam) {
     return (

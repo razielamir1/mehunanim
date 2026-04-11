@@ -77,7 +77,7 @@ export function genPattern(level: number, age: number, bypass = false): MCQ {
     options,
     correct: correctIdx,
     hintContext: `הרצף חוזר על עצמו: ${pool.join('-')}`,
-    dir: 'rtl',
+    dir: 'ltr',
   };
 }
 
@@ -216,8 +216,8 @@ export function genMemory(level: number, age: number, bypass = false): MCQ {
     prompt: `זְכֹר: ${seq.join(' ')}  •  מָה הָיָה בַּמָּקוֹם הַ-${idx + 1}?`,
     options,
     correct: correctIdx,
-    hintContext: `סְפֹר מִיָּמִין לִשְׂמֹאל`,
-    dir: 'rtl',
+    hintContext: `סְפֹר מִשְּׂמֹאל לְיָמִין`,
+    dir: 'ltr',
   };
 }
 
