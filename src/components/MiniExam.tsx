@@ -59,13 +59,14 @@ export default function MiniExam({
     return v;
   };
 
-  // Generate 2 questions at slightly harder level (min 5)
+  // Generate 2 questions at slightly harder level (min 5), with dedup
   const questions = useMemo<MCQ[]>(() => {
     const examLevel = Math.max(level, 5);
-    return [
-      generate(gameId, examLevel, age, bypass),
-      generate(gameId, examLevel, age, bypass),
-    ];
+    const used = new Set<string>();
+    const q1 = generate(gameId, examLevel, age, bypass, used);
+    used.add(q1.prompt);
+    const q2 = generate(gameId, examLevel, age, bypass, used);
+    return [q1, q2];
   }, [gameId, level, age, bypass]);
 
   const [idx, setIdx] = useState(0);

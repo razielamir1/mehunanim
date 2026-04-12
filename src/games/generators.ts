@@ -87,10 +87,15 @@ export function genPattern(level: number, age: number, bypass = false): MCQ {
 // =============================================================
 type OddGroup = { items: string[]; odd: string; cat: string; minLevel: number };
 const ODD_GROUPS: OddGroup[] = [
-  // L1-2: visual
+  // L1-2: visual (expanded for dedup — need 6+ at L1-2)
   { items: ['🍎', '🍌', '🍇'], odd: '🚗', cat: 'פֵּרוֹת', minLevel: 1 },
   { items: ['🐶', '🐱', '🐮'], odd: '🚲', cat: 'בַּעֲלֵי חַיִּים', minLevel: 1 },
   { items: ['🔴', '🔵', '🟢'], odd: '⬛', cat: 'צִבְעֵי הַקֶּשֶׁת', minLevel: 1 },
+  { items: ['🌻', '🌹', '🌷'], odd: '🚌', cat: 'פְּרָחִים', minLevel: 1 },
+  { items: ['🍕', '🍔', '🌮'], odd: '🎸', cat: 'אֹכֶל', minLevel: 1 },
+  { items: ['✈️', '🚂', '🚢'], odd: '🌳', cat: 'כְּלֵי תַּחְבּוּרָה', minLevel: 1 },
+  { items: ['⚽', '🏀', '🎾'], odd: '📚', cat: 'כַּדּוּרִים', minLevel: 1 },
+  { items: ['🐟', '🐠', '🐡'], odd: '🦁', cat: 'דָּגִים', minLevel: 1 },
   // L3-4: simple words
   { items: ['כֶּלֶב', 'חָתוּל', 'סוּס', 'פָּרָה'], odd: 'אוֹטוֹבּוּס', cat: 'בַּעֲלֵי חַיִּים', minLevel: 3 },
   { items: ['תַּפּוּחַ', 'בָּנָנָה', 'עֲנָבִים', 'תּוּת'], odd: 'כִּסֵּא', cat: 'פֵּרוֹת', minLevel: 3 },
@@ -886,6 +891,95 @@ const TRIVIA_BANK: TriviaQ[] = [
     options: ['הַיּוֹם', 'שְׁלוֹשָׁה יָמִים', 'יוֹמַיִם', 'יוֹם אֶחָד'],
     correct: 1, hint: 'סְפֹר: שְׁלִישִׁי, רְבִיעִי, חֲמִישִׁי', minLevel: 3,
   },
+  // ===== L2 additions (ages 3-4) — very simple =====
+  {
+    prompt: 'כַּמָּה רַגְלַיִם יֵשׁ לְכֶלֶב?',
+    options: ['2', '3', '4', '6'],
+    correct: 2, hint: 'כֶּלֶב הוֹלֵךְ עַל אַרְבַּע', minLevel: 1,
+  },
+  {
+    prompt: 'אֵיזוֹ חַיָּה אוֹמֶרֶת "מְיָאוּ"?',
+    options: ['כֶּלֶב', 'חָתוּל', 'פָּרָה', 'תַּרְנְגוֹלֶת'],
+    correct: 1, hint: 'חַיַּת בַּיִת קְטַנָּה שֶׁאוֹהֶבֶת חָלָב', minLevel: 1,
+  },
+  {
+    prompt: 'מָה הַצֶּבַע שֶׁל הַשָּׁמַיִם בְּיוֹם יָפֶה?',
+    options: ['אָדֹם', 'יָרֹק', 'כָּחֹל', 'שָׁחֹר'],
+    correct: 2, hint: 'הִסְתַּכֵּל לְמַעְלָה!', minLevel: 1,
+  },
+  {
+    prompt: 'כַּמָּה אֶצְבָּעוֹת יֵשׁ בְּיָד אַחַת?',
+    options: ['3', '4', '5', '10'],
+    correct: 2, hint: 'סְפֹר אֶת הָאֶצְבָּעוֹת שֶׁלְּךָ', minLevel: 1,
+  },
+  {
+    prompt: 'מָה שׁוֹתִים מִפָּרָה?',
+    options: ['מַיִם', 'מִיץ', 'חָלָב', 'תֵּה'],
+    correct: 2, hint: 'מַשְׁקֶה לָבָן', minLevel: 1,
+  },
+  {
+    prompt: 'אֵיזוֹ חַיָּה אוֹמֶרֶת "הַב הַב"?',
+    options: ['חָתוּל', 'כֶּלֶב', 'צִפּוֹר', 'דָּג'],
+    correct: 1, hint: 'חַיַּת בַּיִת נֶאֱמָנָה', minLevel: 1,
+  },
+  {
+    prompt: 'מָה הַצֶּבַע שֶׁל בָּנָנָה?',
+    options: ['אָדֹם', 'יָרֹק', 'כָּחֹל', 'צָהֹב'],
+    correct: 3, hint: 'פְּרִי אָרֹךְ וּמָתוֹק', minLevel: 1,
+  },
+  {
+    prompt: 'מָה הַצֶּבַע שֶׁל דֶּשֶׁא?',
+    options: ['אָדֹם', 'יָרֹק', 'כָּחֹל', 'צָהֹב'],
+    correct: 1, hint: 'מָה שֶׁגָּדֵל בַּגִּינָה עַל הָרִצְפָּה', minLevel: 1,
+  },
+  // ===== L2-L3 additions =====
+  {
+    prompt: 'כַּמָּה צְדָדִים יֵשׁ לִמְשֻׁלָּשׁ?',
+    options: ['2', '3', '4', '5'],
+    correct: 1, hint: 'הַשֵּׁם שֶׁלּוֹ רוֹמֵז', minLevel: 2,
+  },
+  {
+    prompt: 'מָה בָּא אַחֲרֵי יוֹם שְׁלִישִׁי?',
+    options: ['יוֹם שֵׁנִי', 'יוֹם רְבִיעִי', 'יוֹם חֲמִישִׁי', 'יוֹם שִׁישִּׁי'],
+    correct: 1, hint: 'סְפֹר אֶת יְמוֹת הַשָּׁבוּעַ', minLevel: 2,
+  },
+  // ===== L3 additions =====
+  {
+    prompt: 'כַּמָּה חֳדָשִׁים יֵשׁ בְּשָׁנָה?',
+    options: ['7', '10', '12', '14'],
+    correct: 2, hint: 'מִיָּנוּאָר עַד דֵּצֶמְבֶּר', minLevel: 3,
+  },
+  {
+    prompt: 'מָה הַכּוֹכָב הַקָּרוֹב בְּיוֹתֵר לְכַדּוּר הָאָרֶץ?',
+    options: ['הַיָּרֵחַ', 'הַשֶּׁמֶשׁ', 'מַאֲדִים', 'צֶדֶק'],
+    correct: 1, hint: 'הוּא מֵאִיר לָנוּ בַּיּוֹם', minLevel: 3,
+  },
+  {
+    prompt: 'בְּאֵיזוֹ עוֹנָה יוֹרֵד שֶׁלֶג?',
+    options: ['קַיִץ', 'אָבִיב', 'סְתָו', 'חֹרֶף'],
+    correct: 3, hint: 'הָעוֹנָה הֲכִי קָרָה', minLevel: 3,
+  },
+  // ===== L4 additions =====
+  {
+    prompt: 'מָהִי בִּירַת יִשְׂרָאֵל?',
+    options: ['תֵּל אָבִיב', 'חֵיפָה', 'יְרוּשָׁלַיִם', 'בְּאֵר שֶׁבַע'],
+    correct: 2, hint: 'הָעִיר הַקְּדוֹשָׁה', minLevel: 4,
+  },
+  {
+    prompt: 'בְּאֵיזוֹ שָׂפָה מְדַבְּרִים בְּצָרְפַת?',
+    options: ['אַנְגְּלִית', 'סְפָרַדִּית', 'צָרְפָתִית', 'גֶּרְמָנִית'],
+    correct: 2, hint: 'שָׂפָה עִם שֵׁם דּוֹמֶה לַמְּדִינָה', minLevel: 4,
+  },
+  {
+    prompt: 'כַּמָּה שָׁעוֹת יֵשׁ בְּיוֹם שָׁלֵם?',
+    options: ['12', '20', '24', '30'],
+    correct: 2, hint: 'יוֹם + לַיְלָה בְּיַחַד', minLevel: 4,
+  },
+  {
+    prompt: 'מָה הַחַיָּה הַגְּדוֹלָה בְּיוֹתֵר בַּיָּם?',
+    options: ['כְּרִישׁ', 'דּוֹלְפִין', 'לִוְיָתָן', 'תַּמְנוּן'],
+    correct: 2, hint: 'יוֹנֵק עֲנָק שֶׁגָּר בַּיָּם', minLevel: 4,
+  },
 ];
 
 export function genTrivia(level: number, age: number, bypass = false): MCQ {
@@ -927,24 +1021,34 @@ export function genInequality(level: number, age: number, bypass = false): MCQ {
 }
 
 // =============================================================
-// MAIN dispatcher
+// MAIN dispatcher — with dedup via usedPrompts
 // =============================================================
-export function generate(gameId: string, level: number, age: number = 6, bypass = false): MCQ {
-  switch (gameId) {
-    case 'pattern': return genPattern(level, age, bypass);
-    case 'odd': return genOdd(level, age, bypass);
-    case 'sequence': return genSequence(level, age, bypass);
-    case 'analogy': return genAnalogy(level, age, bypass);
-    case 'memory': return genMemory(level, age, bypass);
-    case 'math': return genMath(level, age, bypass);
-    case 'reading': return genReading(level, age, bypass);
-    case 'synonym': return genSynonym(level, age, bypass);
-    case 'idiom': return genIdiom(level, age, bypass);
-    case 'cloze': return genCloze(level, age, bypass);
-    case 'missing': return genMissingNumber(level, age, bypass);
-    case 'pictureeq': return genPictureEq(level, age, bypass);
-    case 'trivia': return genTrivia(level, age, bypass);
-    case 'inequality': return genInequality(level, age, bypass);
-    default: return genPattern(level, age, bypass);
+export function generate(gameId: string, level: number, age: number = 6, bypass = false, usedPrompts?: Set<string>): MCQ {
+  const gen = (): MCQ => {
+    switch (gameId) {
+      case 'pattern': return genPattern(level, age, bypass);
+      case 'odd': return genOdd(level, age, bypass);
+      case 'sequence': return genSequence(level, age, bypass);
+      case 'analogy': return genAnalogy(level, age, bypass);
+      case 'memory': return genMemory(level, age, bypass);
+      case 'math': return genMath(level, age, bypass);
+      case 'reading': return genReading(level, age, bypass);
+      case 'synonym': return genSynonym(level, age, bypass);
+      case 'idiom': return genIdiom(level, age, bypass);
+      case 'cloze': return genCloze(level, age, bypass);
+      case 'missing': return genMissingNumber(level, age, bypass);
+      case 'pictureeq': return genPictureEq(level, age, bypass);
+      case 'trivia': return genTrivia(level, age, bypass);
+      case 'inequality': return genInequality(level, age, bypass);
+      default: return genPattern(level, age, bypass);
+    }
+  };
+  // Retry up to 15 times to avoid repeating a prompt from this session
+  if (!usedPrompts || usedPrompts.size === 0) return gen();
+  for (let attempt = 0; attempt < 15; attempt++) {
+    const q = gen();
+    if (!usedPrompts.has(q.prompt)) return q;
   }
+  // All retries exhausted — return last generated (better than nothing)
+  return gen();
 }

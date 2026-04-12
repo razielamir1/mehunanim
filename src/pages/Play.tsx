@@ -48,9 +48,17 @@ export default function Play() {
   // Toddler mode triggered by age UNLESS parent override is set
   const isToddler = age <= 3 && !bypass;
 
+  // Track used prompts to avoid repeats within a session
+  const usedPromptsRef = useRef(new Set<string>());
+  const genQ = () => {
+    const q = generate(gameId, level, age, bypass, usedPromptsRef.current);
+    usedPromptsRef.current.add(q.prompt);
+    return q;
+  };
+
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
-  const [q, setQ] = useState<MCQ>(() => generate(gameId, level, age, bypass));
+  const [q, setQ] = useState<MCQ>(() => genQ());
   const [picked, setPicked] = useState<number | null>(null);
   const [hint, setHint] = useState('');
   const [explain, setExplain] = useState('');
@@ -74,7 +82,7 @@ export default function Play() {
 
   const pose = picked === null ? 'idle' : picked === q.correct ? 'celebrate' : 'thinking';
 
-  const next = () => { setPicked(null); setHint(''); setExplain(''); setQ(generate(gameId, level, age, bypass)); };
+  const next = () => { setPicked(null); setHint(''); setExplain(''); setQ(genQ()); };
 
   const choose = (i: number) => {
     if (picked !== null) return;
