@@ -60,6 +60,7 @@ export default function Play() {
   const [correct, setCorrect] = useState(0);
   const [q, setQ] = useState<MCQ>(() => genQ());
   const [picked, setPicked] = useState<number | null>(null);
+  const [autoExplain, setAutoExplain] = useState('');
   const [hint, setHint] = useState('');
   const [explain, setExplain] = useState('');
   const [loading, setLoading] = useState<'hint' | 'explain' | null>(null);
@@ -82,7 +83,7 @@ export default function Play() {
 
   const pose = picked === null ? 'idle' : picked === q.correct ? 'celebrate' : 'thinking';
 
-  const next = () => { setPicked(null); setHint(''); setExplain(''); setQ(genQ()); };
+  const next = () => { setPicked(null); setAutoExplain(''); setHint(''); setExplain(''); setQ(genQ()); };
 
   const choose = (i: number) => {
     if (picked !== null) return;
@@ -99,6 +100,19 @@ export default function Play() {
     } else {
       sfx.wrong();
     }
+    // Always explain after answer — both correct and wrong
+    const correctAnswer = q.options[q.correct];
+    const explainText = isRight
+      ? (locale === 'en'
+          ? `Correct! ${q.hintContext || ''}`
+          : `נָכוֹן! ${q.hintContext || ''}`)
+      : (locale === 'en'
+          ? `Not quite. The correct answer is ${correctAnswer}. ${q.hintContext || ''}`
+          : `לֹא בְּדִיּוּק. הַתְּשׁוּבָה הַנְּכוֹנָה הִיא ${correctAnswer}. ${q.hintContext || ''}`);
+    setAutoExplain(explainText);
+    // Speak the explanation out loud (force — always, regardless of ttsOn)
+    setTimeout(() => speak(explainText, { force: true, rate: 0.85 }), 600);
+    // Longer delay to let explanation be heard before moving on
     setTimeout(() => {
       if (idx + 1 >= ROUND) {
         const finalCorrect = correct + (isRight ? 1 : 0);
@@ -117,7 +131,7 @@ export default function Play() {
         setIdx((x) => x + 1);
         next();
       }
-    }, 1500);
+    }, 4000);
   };
 
   const ask = async (mode: 'hint' | 'explain') => {
@@ -276,6 +290,24 @@ export default function Play() {
               );
             })}
           </div>
+          {autoExplain && picked !== null && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={cn(
+                'mt-4 rounded-2xl px-4 py-3 text-start text-base font-bold border-2',
+                picked === q.correct
+                  ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200'
+                  : 'bg-rose-50 dark:bg-rose-900/20 border-rose-300 dark:border-rose-700 text-rose-800 dark:text-rose-200'
+              )}
+              dir="auto"
+            >
+              <div className="flex items-start gap-2">
+                <Volume2 className="w-5 h-5 shrink-0 mt-0.5 opacity-60" />
+                <span>{autoExplain}</span>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       </AnimatePresence>
 
