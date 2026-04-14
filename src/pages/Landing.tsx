@@ -110,6 +110,35 @@ export default function Landing() {
         </div>
         <button onClick={start} className="btn-primary w-full text-xl">{t('start')}</button>
       </div>
+
+      {/* Footer — about the creator */}
+      <footer className="mt-16 mb-8 w-full max-w-md text-center space-y-3 opacity-70 hover:opacity-100 transition-opacity">
+        <div className="h-px bg-gradient-to-l from-transparent via-slate-300 dark:via-slate-600 to-transparent" />
+        <div className="space-y-1.5">
+          <p className="font-black text-base text-slate-700 dark:text-slate-200">
+            {locale === 'en' ? 'Raziel Amir' : 'רזיאל אמיר'}
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {locale === 'en' ? 'AI Architect | GenAI Solutions Developer' : 'אַרְכִּיטֶקְט AI | מְפַתֵּחַ פִּתְרוֹנוֹת GenAI'}
+          </p>
+        </div>
+        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm mx-auto" dir="auto">
+          {locale === 'en'
+            ? "Mehunanim was built from scratch using AI — from 0 to production in days, not months. I design and build smart digital products for businesses and individuals: AI automations, intelligent agents, and GenAI systems that work for you 24/7."
+            : 'מְחוּנָנִים נִבְנָה מֵאֶפֶס בְּאֶמְצָעוּת בִּינָה מְלָאכוּתִית — מ-0 לְפְרוֹדַקְשֶׁן תּוֹךְ יָמִים, לֹא חֳדָשִׁים. אֲנִי מְתַכְנֵן וּבוֹנֶה מוּצָרִים דִּיגִיטָלִיִּים חֲכָמִים לַעֲסָקִים וְלִפְרָטִיִּים: אוֹטוֹמַצְיוֹת AI, סוֹכְנִים חֲכָמִים, וּמַעֲרָכוֹת GenAI שֶׁעוֹבְדוֹת בִּשְׁבִילְכֶם 24/7.'}
+        </p>
+        <a
+          href="mailto:razielamir@gmail.com"
+          className="inline-flex items-center gap-2 text-sm font-bold text-brand-600 dark:text-brand-400 hover:underline"
+        >
+          📩 razielamir@gmail.com
+        </a>
+        <p className="text-xs text-slate-400 dark:text-slate-500" dir="auto">
+          {locale === 'en'
+            ? 'Got an idea? Feedback? Want your own AI product? Talk to me — I build the next thing, maybe it\'s yours.'
+            : 'יֵשׁ לָכֶם רַעְיוֹן? פִּידְבֶּק? רוֹצִים מוּצָר AI מִשֶּׁלָּכֶם? דַּבְּרוּ אִתִּי — אֲנִי בּוֹנֶה אֶת הַדָּבָר הַבָּא, אוּלַי הוּא שֶׁלָּכֶם.'}
+        </p>
+      </footer>
     </div>
   );
 }
