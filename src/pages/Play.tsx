@@ -60,6 +60,9 @@ export default function Play() {
   const [correct, setCorrect] = useState(0);
   const [q, setQ] = useState<MCQ>(() => genQ());
   const [picked, setPicked] = useState<number | null>(null);
+  // Tie the selection to a specific question — prevents pre-marking on next Q
+  // if React batches state oddly across setTimeout boundaries.
+  const pickedForQRef = useRef<MCQ | null>(null);
   const [autoExplain, setAutoExplain] = useState('');
   const [hint, setHint] = useState('');
   const [explain, setExplain] = useState('');
@@ -76,17 +79,27 @@ export default function Play() {
   const { speak, stop } = useSpeak();
   // Auto-TTS only if user explicitly turned it on. No surprise speech.
   useEffect(() => {
-    if (!ttsOn || picked !== null) return;
+    if (!ttsOn || effectivePicked !== null) return;
     const t = setTimeout(() => speak(q.prompt, { rate: isToddler ? 0.8 : 0.9 }), isToddler ? 500 : 200);
     return () => { clearTimeout(t); stop(); };
   }, [q, picked, ttsOn, isToddler, speak, stop]);
 
-  const pose = picked === null ? 'idle' : picked === q.correct ? 'celebrate' : 'thinking';
+  // Only treat `picked` as active if it belongs to the current question.
+  const effectivePicked = pickedForQRef.current === q ? picked : null;
+  const pose = effectivePicked === null ? 'idle' : effectivePicked === q.correct ? 'celebrate' : 'thinking';
 
-  const next = () => { setPicked(null); setAutoExplain(''); setHint(''); setExplain(''); setQ(genQ()); };
+  const next = () => {
+    pickedForQRef.current = null;
+    setPicked(null);
+    setAutoExplain('');
+    setHint('');
+    setExplain('');
+    setQ(genQ());
+  };
 
   const choose = (i: number) => {
-    if (picked !== null) return;
+    if (effectivePicked !== null) return;
+    pickedForQRef.current = q;
     setPicked(i);
     haptic();
     const isRight = i === q.correct;
@@ -272,8 +285,8 @@ export default function Play() {
                 const firstWrong = q.options.findIndex((_, j) => j !== q.correct);
                 if (i !== q.correct && i !== firstWrong) return null;
               }
-              const isRight = picked !== null && i === q.correct;
-              const isWrong = picked === i && i !== q.correct;
+              const isRight = effectivePicked !== null && i === q.correct;
+              const isWrong = effectivePicked === i && i !== q.correct;
               return (
                 <button
                   key={i}
@@ -281,22 +294,22 @@ export default function Play() {
                   className={cn(
                     'rounded-2xl font-black border-2 transition px-3',
                     isToddler ? 'min-h-[140px] text-5xl' : 'min-h-[80px] text-2xl',
-                    picked === null && 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 active:scale-95 hover:border-brand-500',
+                    effectivePicked === null && 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 active:scale-95 hover:border-brand-500',
                     isRight && 'bg-emerald-400 border-emerald-500 text-white animate-pop',
                     isWrong && 'bg-rose-300 border-rose-400 text-white animate-shake',
-                    picked !== null && !isRight && !isWrong && 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-50'
+                    effectivePicked !== null && !isRight && !isWrong && 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-50'
                   )}
                 >{opt}</button>
               );
             })}
           </div>
-          {autoExplain && picked !== null && (
+          {autoExplain && effectivePicked !== null && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               className={cn(
                 'mt-4 rounded-2xl px-4 py-3 text-start text-base font-bold border-2',
-                picked === q.correct
+                effectivePicked === q.correct
                   ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200'
                   : 'bg-rose-50 dark:bg-rose-900/20 border-rose-300 dark:border-rose-700 text-rose-800 dark:text-rose-200'
               )}
@@ -313,11 +326,11 @@ export default function Play() {
 
       <div className="flex items-center justify-center gap-3 flex-wrap">
         <Mascot pose={pose as any} size={70} />
-        <button onClick={() => ask('hint')} disabled={loading !== null || picked !== null}
+        <button onClick={() => ask('hint')} disabled={loading !== null || effectivePicked !== null}
           className="btn-ghost !min-h-[52px] text-base disabled:opacity-50">
           {loading === 'hint' ? <Sparkles className="w-5 h-5 animate-spin" /> : <Lightbulb className="w-5 h-5" />} {t('hintBtn')}
         </button>
-        {picked !== null && (
+        {effectivePicked !== null && (
           <button onClick={() => ask('explain')} disabled={loading !== null}
             className="btn-ghost !min-h-[52px] text-base disabled:opacity-50">
             {loading === 'explain' ? <Sparkles className="w-5 h-5 animate-spin" /> : <BookOpen className="w-5 h-5" />} {t('explainBtn')}

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GraduationCap, CheckCircle2, XCircle, Volume2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -73,8 +73,10 @@ export default function MiniExam({
   const [picked, setPicked] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const pickedForQRef = useRef<MCQ | null>(null);
 
   const q = questions[idx];
+  const effectivePicked = pickedForQRef.current === q ? picked : null;
 
   // Auto-advance after 2s when result is shown
   useEffect(() => {
@@ -83,6 +85,7 @@ export default function MiniExam({
       if (idx + 1 >= questions.length) {
         onComplete(correctCount);
       } else {
+        pickedForQRef.current = null;
         setPicked(null);
         setShowResult(false);
         setIdx(idx + 1);
@@ -100,7 +103,8 @@ export default function MiniExam({
   }, [q.prompt, q.dir]);
 
   const choose = (i: number) => {
-    if (picked !== null) return;
+    if (effectivePicked !== null) return;
+    pickedForQRef.current = q;
     setPicked(i);
     haptic();
     const isRight = i === q.correct;
@@ -153,19 +157,19 @@ export default function MiniExam({
 
           <div className="grid gap-3">
             {q.options.map((opt, i) => {
-              const isRight = picked !== null && i === q.correct;
-              const isWrong = picked === i && i !== q.correct;
+              const isRight = effectivePicked !== null && i === q.correct;
+              const isWrong = effectivePicked === i && i !== q.correct;
               return (
                 <button
                   key={i}
                   onClick={() => choose(i)}
-                  disabled={picked !== null}
+                  disabled={effectivePicked !== null}
                   className={cn(
                     'min-h-[64px] rounded-2xl text-lg font-bold border-2 px-4 text-start transition active:scale-95',
-                    picked === null && 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-500',
+                    effectivePicked === null && 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-500',
                     isRight && 'bg-emerald-400 border-emerald-500 text-white animate-pop',
                     isWrong && 'bg-rose-300 border-rose-400 text-white animate-shake',
-                    picked !== null && !isRight && !isWrong && 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-50'
+                    effectivePicked !== null && !isRight && !isWrong && 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-50'
                   )}
                 >
                   <span className="ms-2">{['א', 'ב', 'ג', 'ד'][i]}.</span> {opt}
@@ -180,20 +184,20 @@ export default function MiniExam({
               animate={{ opacity: 1, y: 0 }}
               className={cn(
                 'mt-4 p-4 rounded-2xl border-2',
-                picked === q.correct
+                effectivePicked === q.correct
                   ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300'
                   : 'bg-rose-50 dark:bg-rose-900/20 border-rose-300'
               )}
             >
               <div className="flex items-start gap-2">
-                {picked === q.correct ? (
+                {effectivePicked === q.correct ? (
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                 ) : (
                   <XCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
                 )}
                 <div className="flex-1 text-start">
                   <div className="font-black text-sm mb-1">
-                    {picked === q.correct ? tt('correct') : (
+                    {effectivePicked === q.correct ? tt('correct') : (
                       <>
                         {tt('wrong')} — {tt('correctIs')} <strong>{q.options[q.correct]}</strong>
                       </>
